@@ -46,14 +46,14 @@ def ttest (data, group1, group2):
     p = scipy.stats.chi2.sf(D,1)
     
     #Print results
-    print "-----------------------------"
+    print ("-----------------------------")
     print (group1 + " vs. " + group2)
     print ("p-value = " + str(p))
     if p <= 0.05:
-        print "Significance"
+        print ("Significance")
     else:
-        print "No significance"
-    print "-----------------------------"
+        print ("No significance")
+    print ("-----------------------------")
 
 #Perform t-tests
 ttest(ponzr1, group1="WT", group2="M124K")
@@ -64,3 +64,27 @@ ttest(ponzr1, group1="WT", group2="I213N")
 plotnine.ggplot(ponzr1, plotnine.aes(x="mutation", y="ponzr1Counts")) + plotnine.geom_point()
 
 ### End challenge 1 -------------------------------------------------------------------------------
+### Begin Challenge 2 -----------------------------------------------------------------------------
+import pandas as pd
+import numpy as np
+import scipy.stats
+from scipy.optimize import minimize
+import plotnine
+
+#read in files
+MG=pd.read_csv('MmarinumGrowth.csv')
+
+#function for returning negative log likelihood for t-test model
+def nllike_K (p, obs):
+    B0 = p[0]
+    B1 = p[1]
+    sigma = p[2]
+    expected = B0 * (obs.S/(obs.S + B1))
+    nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.u).sum()
+    return nll
+
+#initial guess variable, supposedly minimizes the negative log likelihood but I don't know how this works
+initialGuess=np.array([1,1,1])
+fit=minimize(nllike_K,initialGuess,method="Nelder-Mead",options={'disp': True},args=MG)
+print(fit)
+### End of Challenge 2 -----------------------------------------------------------------------------
