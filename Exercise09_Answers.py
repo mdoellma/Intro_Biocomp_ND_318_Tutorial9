@@ -1,16 +1,36 @@
 # Exercise 9 
 # Author: Grant Keller and Kathleen Nicholson
-# Import Packages
 
 import numpy
 import pandas
 from scipy.optimize import minimize
-from scipy.stats import norm
+from scipy.stats import norm, chi2
 from plotnine import *
 
-def nllike(p, obs, x, y):
-    expected = p[0] + p[1] * obs[x]
-    return -1 * norm(expected, p[2]).logpdf(obs[y]).sum()
+def nllike(p, obs, model, x, y):
+    return -1 * norm(eval(model), p[2]).logpdf(obs[y]).sum()
+
+def test_null(data, control, treat):
+    guess = numpy.array([1, 1, 1])
+    control_x = [0 for v in data.mutation if v == control]
+    control_y = [data.iloc[i][1] for i in range(len(data)) if data.iloc[i][0] == control]
+    treat_x = [1 for v in data.mutation if v == treat]
+    treat_y = [data.iloc[i][1] for i in range(len(data)) if data.iloc[i][0] == treat]
+    
+    d = {'x': control_x + treat_x,
+         'y': control_y + treat_y}
+    df = pandas.DataFrame(d)
+
+    model0 = 'p[0]' # null hypothesis - same model describes control & experiment well
+    args0 = (df, model0, 'x', 'y')
+    
+    model1 = 'p[0] + p[1] * obs[x]' # model treating two conditions (exp. vs. control) differently
+    args1 = (df, model1, 'x', 'y')
+    
+    nullFit = minimize(nllike, guess, method="Nelder-Mead", args=args0)
+    treatFit = minimize(nllike, guess, method="Nelder-Mead", args=args1)
+    diff = abs(nllike(treatFit.x, df, model1, 'x', 'y') - nllike(nullFit.x, df, model0, 'x', 'y'))
+    return 1 - chi2.cdf(x=2*diff, df=1)
 
 # Q1
 ## This code will perform a likelihood ratio test to determine which mutation 
@@ -52,37 +72,35 @@ M124K: p-value ~ 0.72 (no effect of treatment)
 V456D: p-value ~ 5.6e-6 (effect of treatment)
 I213N: p-value ~ 0.88 (no effect of treatment)
 """
-# this isn't correct, but it's a (working) start
+#Q1#######################################################
 data = pandas.read_csv('ponzr1.csv')
-data['x1'] = [0 for v in data.mutation]
-data['x2'] = [['WT', 'M124K', 'V456D', 'I213N'].index(v) for v in data.mutation]
-data['y'] = data.ponzr1Counts
-initGuess=numpy.array([1,1,1])
-fit0 = minimize(nllike, initGuess, method="Nelder-Mead", options={'disp': True}, args=(data,'x1','y'))
-fit1 = minimize(nllike, initGuess, method="Nelder-Mead", options={'disp': True}, args=(data,'x2','y'))
-D1 = nllike(fit0.x, data)
-D2 = nllike(fit1.x, data)
+control = 'WT'
+muts = []
+for item in data.mutation.unique():
+    if item != control:
+        muts.append(item)
 
-diff = abs(D2 - D1)
-1-scipy.stats.chi2.cdf(x=2*diff, df=1)
+for condition in muts:
+    p_val = test_null(data, control, condition)
+    if p_val <= 0.05:
+        msg = "significantly affected"
+    else:
+        msg = "did not significantly affect"
+    print "The {0} mutation {1} ponzr1 expression (p-value: {2:.2})".format(condition, msg, p_val)
 
+###########################################################
 
-#           evaluation of function
-#                   fit nll to data 
-#                   Likelihood ratio test, graph.
-
-#Q2
-
-def nlllike_growth(p, obs, x, y):
-    expected = p[0] * obs[x] / (obs[x] + p[1])
-    return -1 * norm(expected, p[2]).logpdf(obs[y]).sum()
+#Q2#######################################################
 
 growth_data = pandas.read_csv('MmarinumGrowth.csv')
-fit = minimize(nllike2, initGuess, method="Nelder-Mead", options={'disp': True}, args=(growth_data,'S','u'))
+model = 'p[0] * obs[x] / (obs[x] + p[1])'
+guess = 
+fit = minimize(nllike, guess, method="Nelder-Mead", options={'disp': True}, args=(growth_data, model, 'S', 'u'))
 
 print "The maximum growth rate is: {:.6}.".format(fit.x[0])
 print "The half maximal growth concentration is: {}.".format(int(round(fit.x[1])))
-print "Std. dev. (sigma) is: {:.1}.".format(fit.x[2])
+
+###########################################################
 
 #Q3
 
@@ -129,3 +147,8 @@ a lot better than the constant or null model. The p-values for
 the likelihood ratio tests should all be essentially zero (~1e-20 
 or less).
 """
+def main():
+    pass
+
+# if __name__ == '__main__':
+    
