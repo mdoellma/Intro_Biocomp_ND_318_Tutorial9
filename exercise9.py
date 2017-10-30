@@ -65,11 +65,6 @@ plotnine.ggplot(ponzr1, plotnine.aes(x="mutation", y="ponzr1Counts")) + plotnine
 
 ### End challenge 1 -------------------------------------------------------------------------------
 ### Begin Challenge 2 -----------------------------------------------------------------------------
-import pandas as pd
-import numpy as np
-import scipy.stats
-from scipy.optimize import minimize
-import plotnine
 
 #read in files
 MG=pd.read_csv('MmarinumGrowth.csv')
@@ -88,3 +83,41 @@ initialGuess=np.array([1,1,1])
 fit=minimize(nllike_K,initialGuess,method="Nelder-Mead",options={'disp': True},args=MG)
 print(fit)
 ### End of Challenge 2 -----------------------------------------------------------------------------
+###  Begin Challenge 3 -----------------------------------------------------------------------------
+#read in file
+LD=pd.read_csv('leafDecomp.csv')
+
+#constant rate maximum likelihood d=a
+def nllike_LDC (p, obs):
+    B0 = p[0]
+    sigma = p[1]
+    expected = B0
+    nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.decomp).sum()
+    return nll
+initialGuess=np.array([1,1])
+fitLDC=minimize(nllike_LDC,initialGuess,method="Nelder-Mead",options={'disp': True},args=LD)
+
+#linear rate maximum likelihood d=a+bMs
+def nllike_LDL (p, obs):
+    B0 = p[0]
+    B1 = p[1]
+    sigma = p[2]
+    expected = B0 + B1 * obs.Ms
+    nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.decomp).sum()
+    return nll
+initialGuess=np.array([1,1,1])
+fitLDL=minimize(nllike_LDL,initialGuess,method="Nelder-Mead",options={'disp': True},args=LD)
+
+#quadratic rate maximum likelihood d=a+bMS+cMs^2
+def nllike_LDQ (p, obs):
+    B0 = p[0]
+    B1 = p[1]
+    B2 = p[2]
+    sigma = p[3]
+    expected = B0 + (B1 * obs.Ms) + B2 * (obs.Ms**(2))
+    nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.decomp).sum()
+    return nll
+initialGuess=np.array([1,1,1,1])
+fitLDQ=minimize(nllike_LDQ,initialGuess,method="Nelder-Mead",options={'disp': True},args=LD)
+print(fitLDQ)
+
