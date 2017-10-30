@@ -32,47 +32,9 @@ def test_null(data, control, treat):
     diff = abs(nllike(treatFit.x, df, model1, 'x', 'y') - nllike(nullFit.x, df, model0, 'x', 'y'))
     return 1 - chi2.cdf(x=2*diff, df=1)
 
-# Q1
+#Q1#######################################################
 ## This code will perform a likelihood ratio test to determine which mutation 
 ##      of three in the ponzr1 gene causes a significant reduction in mRNA levels
-"""
-1. In contrast to the study we read this week (Kelly et al. 2014), 
-many laboratory experiments are designed to test the speciﬁc eﬀect 
-of a treatment with all other variables controlled. 
-
-These experiments will have replicated treatment and control sets 
-of experimental units.
-a t-test is used to evaluate whether there is a statistically 
-signiﬁcant diﬀerence in the mean of measurements taken from the
-treatment and control experimental units. 
-
-In this approach, the likelihood of a null model with a single
-parameter describing the mean behavior of all experimental units
-(y=B0+error) is compared to the likelihood of a model with an
-additional parameter that describes the diﬀerence between treatment
-and control groups (y=B0+B1*treat+error). 
-
-If the diﬀerence in likelihood between the two models is large
-enough, we can say that our treatment had a statistically signiﬁcant
-eﬀect. 
-
-We test for statistical signiﬁcance by asking whether two times
-the diﬀerence in likelihoods (D) is large relative to a chi-squared
-distribution with one degree of freedom. 
-
-This test can be accomplished with 1-scipy.stats.chi2.cdf(x=D,df=1) in Python.
-
-Use a likelihood ratio test to determine which of three mutations
-signiﬁcantly reduced the expression of ponzr1, a gene involved in
-the formation of the glomerulus in a developing zebraﬁsh kidney.
-
-ANSWERS
-
-M124K: p-value ~ 0.72 (no effect of treatment)
-V456D: p-value ~ 5.6e-6 (effect of treatment)
-I213N: p-value ~ 0.88 (no effect of treatment)
-"""
-#Q1#######################################################
 data = pandas.read_csv('ponzr1.csv')
 control = 'WT'
 muts = []
