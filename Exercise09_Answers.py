@@ -1,6 +1,6 @@
 # Exercise 9 
 # Author: Grant Keller and Kathleen Nicholson
-# Import Packages ****I'm not yet sure if we need more or less of these.
+# Import Packages
 
 import numpy
 import pandas
@@ -15,7 +15,6 @@ def nllike(p, obs):
 # Q1
 ## This code will perform a likelihood ratio test to determine which mutation 
 ##      of three in the ponzr1 gene causes a significant reduction in mRNA levels
-
 """
 1. In contrast to the study we read this week (Kelly et al. 2014), 
 many laboratory experiments are designed to test the speciﬁc eﬀect 
@@ -47,6 +46,7 @@ Use a likelihood ratio test to determine which of three mutations
 signiﬁcantly reduced the expression of ponzr1, a gene involved in
 the formation of the glomerulus in a developing zebraﬁsh kidney.
 """
+# this isn't correct, but it's a (working) start
 data = pandas.read_csv('ponzr1.csv')
 data['x'] = [0 for v in data.mutation]
 data['y'] = data.ponzr1Counts
@@ -59,6 +59,11 @@ D2 = nllike(fit1.x, data)
 
 diff = abs(D2 - D1)
 1-scipy.stats.chi2.cdf(x=2*diff, df=1)
+
+
+#           evaluation of function
+#                   fit nll to data 
+#                   Likelihood ratio test, graph.
 
 #Q2
 
