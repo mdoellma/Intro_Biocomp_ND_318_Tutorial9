@@ -1,0 +1,23 @@
+#Code for tutorial 9
+
+# import packages
+import numpy
+import pandas
+from scipy.stats import norm
+from scipy.optimize import minimize
+from scipy.stats import chi2
+
+# [1] likelihood ratio test to determine which of the three mutations significantly reduced the expression of ponzr1
+    #Pull out only control and treatment you are interested in
+        #var1=dataframe.loc[dataframe.col1name.isin([list of vals in column]),:]
+    #Make new data frame with 'group' column (your x=0 or x=1)
+        #var2=pandas.DataFrame({'y':var1.col2name, 'x':{})
+    #Designate 'treatment' group as x=1
+        #var2.loc[var1.col1name=='name of treatment group', 'x']=1
+
+# [2] "MmarinumGrowth.csv" estimate the maximum growth rate (umax) and the half-saturation constant (Ks)
+    #Make a list of numbers from 0 to max value - 1
+        #numpy.arrange(max value)
+
+# [3] "leafDecomp.csv" determine whether we should use a constant rate (d = a), a linear response (d = a +bM) or a hump-shaped response (d = a +bM + cM2)
+
