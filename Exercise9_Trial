@@ -25,9 +25,21 @@ V456DFrame=pandas.DataFrame({'y':V456D.ponzr1Counts,'x':0})
 V456DFrame.loc[V456D.mutation=='V456D','x']=1
 I213NFrame=pandas.DataFrame({'y':I213N.ponzr1Counts,'x':0})
 I213NFrame.loc[I213N.mutation=='I213N','x']=1
-print(M124KFrame)
-print(V456DFrame)
-print(I213NFrame)
+#print(M124KFrame)
+#print(V456DFrame)
+#print(I213NFrame)
+
+#define function
+def nllike(p,obs):
+    B0=p[0]
+    sigma=p[1]
+    expected=B0
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
+    return nll 
+initialGuess=numpy.array([1,1])
+fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp':True},args=M124KFrame) #for first mutation
+print(fit.fun) #prints negative log likelihood values
+
 
 # [2] "MmarinumGrowth.csv" estimate the maximum growth rate (umax) and the half-saturation constant (Ks)
     #load data
