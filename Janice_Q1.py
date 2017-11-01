@@ -12,9 +12,9 @@ from scipy.stats import norm
 from scipy.stats import chi2
 
 
-infile = open ("ponzr1.csv", 'r')
+file=pandas.read_csv("ponzr1.csv",header=0,sep=",")
 
-#---------------------------------------------------------------------------
+#--from tutorial-------------------------------------------------------------------------
 def nllike(arguments):
     unpack arguments, assign variables
     calc expected value (model equation)
@@ -34,85 +34,35 @@ def nllike(p, obs):
 pval = 1-chi2.cdf(x=2*(nllalt-nullnull), df = diffInNumParam)    
 #----------------------------------------------------------------------------
 
-df = pd.read_csv("ponzr1.csv", delimiter= ',')
+WT_M124=file.loc[file.mutation.isin(['WT', 'M124K']),:]
+WT_V456D=file.loc[file.mutation.isin(['WT', 'V456D']),:]
+WT_I213N=file.loc[file.mutation.isin(['WT', 'I213N']),:]
 
-WT = []
-M124K = []
-I213N = [] 
-V456D = []
+#change columns to x and y, and treatment to 0 (WT) or 1 (mutation) for x in equation down below 
+WT_M124=pandas.DataFrame({'y':mut1.ponzr1Counts, 'x':0})
+WT_M124.loc[mut1.mutation=='M124K', 'x']=1
 
-#place gene counts into respective list: WT or specific mutation 
-for i in range(0,len(df),1):
-    if df.mutation[i]=="WT":
-        WT.append(df.ponzr1Counts[i])
-    elif df.mutation[i] == "M124K":
-        M124K.append(df.ponzr1Counts[i])
-    elif df.mutation[i] == "I213N":
-        I213N.append(df.ponzr1Counts[i])
-    elif df.mutation[i] == "V456D":
-        V456D.append(df.ponzr1Counts[i])
+WT_V456D=pandas.DataFrame({'y':mut2.ponzr1Counts, 'x':0})
+WT_V456D.loc[mut2.mutation=='V456D', 'x']=1
 
-#create df with conditions to be compared 
-WT_df = pd.DataFrame({'WT':WT})
-WT_df['M124K']= M124K
-
-WT_I213N = pd.DataFrame({'WT':WT})
-WT_I213N['I213N']= I213N
-
-WT_V456D = pd.DataFrame({'WT':WT})
-WT_V456D['V456D']= V456D
-
-#For WT_I213N ----------------------------------------------------------------------------------------
-def nllike(p, obs):
-    B0 = p[0]
-    B1 = p[1]
-    sigma = p[2]
-    
-    expected = B0 + B1*WT_I213N.I213N #make sure data import has a column called x 
-    
-    nll=-1*norm(expected,sigma).logpdf(WT_I213N.WT).sum()
-    return nll 
-    
-initialGuess=np.array([1,1,1])
-fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp': True},args=df)    
-print (fit.x)
-I213N_fit = fit.x
-#------------------------------------------------------------------------------------------------------
-
-#For WT_V456D ----------------------------------------------------------------------------------------
-def nllike(p, obs):
-    B0 = p[0]
-    B1 = p[1]
-    sigma = p[2]
-    
-    expected = B0 + B1*WT_V456D.V456D #make sure data import has a column called x 
-    
-    nll=-1*norm(expected,sigma).logpdf(WT_V456D.WT).sum()
-    return nll 
-    
-initialGuess=np.array([1,1,1])
-fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp': True},args=df)    
-print (fit.x)
-V456D_fit = fit.x
-#------------------------------------------------------------------------------------------------------
-
+WT_I213N=pandas.DataFrame({'y':mut3.ponzr1Counts, 'x':0})
+WT_I213N.loc[mut3.mutation=='I213N', 'x']=1
 
 #for WT 
 def nullnull(p, obs):
     B0 = p[0]
     sigma = p[1]
     
-    expected = B0 + WT_df.WT #make sure data import has a column called x 
+    expected = B0 
     
-    nll=-1*norm(expected,sigma).logpdf(WT_df.WT).sum()
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
     return nll 
     
 initialGuess=np.array([1,1,1])
-fit=minimize(nullnull,initialGuess,method="Nelder-Mead",options={'disp': True},args=df)    
-print (fit.x)
 
-WT_null = fit.x
 #------------------------------------------------------------------------------------------------------
+
+
 
 #For WT_M124K -----------------------------------------------------------------------------------------
 def nllike(p, obs):
@@ -120,22 +70,72 @@ def nllike(p, obs):
     B1 = p[1]
     sigma = p[2]
     
-    expected = B0 + B1*WT_df.M124K #make sure data import has a column called x 
+    expected = B0 + B1*obs.x #make sure data import has a column called x 
     
-    nll=-1*norm(expected,sigma).logpdf(WT_df.WT).sum()
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
     return nll 
     
 initialGuess=np.array([1,1,1])
-fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp': True},args=df)    
+fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp': True},args=WT_M124K)    
 print (fit.x)
 
 WT_M124K = fit.x 
+
+nullfit=minimize(nullnull,initialGuess,method="Nelder-Mead",options={'disp': True},args=WT_M124)    
+print (fit.x)
+
+WT_null = fit.x
+
 #--------------------------------------------------------------------------------------------------------
-
+D = (2*(nullfit.fun - WT_M124K.fun))
 chi_M124K = 1-scipy.stats.chi2.cdf(x=D,df=1)
+print ("Value for M124K mutation:",chi_M124K)
 
-diffInNumParam = 1
+#For WT_I213N ----------------------------------------------------------------------------------------
+def nllikeI213N(p, obs):
+    B0 = p[0]
+    B1 = p[1]
+    sigma = p[2]
+    
+    expected = B0 + B1*obs.x #make sure data import has a column called x 
+    
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
+    return nll 
+    
+initialGuess=np.array([1,1,1])
+fit=minimize(nllikeI213N,initialGuess,method="Nelder-Mead",options={'disp': True},args=WT_I213N)
+I213N_fit = fit.x
 
-M124K_pval = 1-chi2.cdf(x=2*(WT_M124K-WT_null), df = diffInNumParam)
-V456D_pval = 1-chi2.cdf(x=2*(V456D_fit-WT_null), df = diffInNumParam)
+WT_null = minimize(nllike,initialGuess,method="Nelder-Mead", options = {'disp': True}, args = WT_I213N)
+print (fit.x)
+nullfit = fit.x 
+#------------------------------------------------------------------------------------------------------
+D = (2*(nullfit.fun - I213N_fit.fun))
+chi_I213N = 1-scipy.stats.chi2.cdf(x=D,df=1)
+print ("Answer for I213N mutation:", chi_I213N)
+
+#For WT_V456D ----------------------------------------------------------------------------------------
+def nllike3(p, obs):
+    B0 = p[0]
+    B1 = p[1]
+    sigma = p[2]
+    
+    expected = B0 + B1*obs.x #make sure data import has a column called x 
+    
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
+    return nll 
+    
+initialGuess=np.array([1,1,1])
+fit=minimize(nllike3,initialGuess,method="Nelder-Mead",options={'disp': True},args=WT_V456D)    
+print (fit.x)
+V456D_fit = fit.x
+
+WT_null = minimize(nllike,initialGuess,method="Nelder-Mead", options = {'disp': True}, args = WT_V456D)
+print (fit.x)
+nullfit = fit.x 
+#------------------------------------------------------------------------------------------------------
+D = (2*(nullfit.fun - V456D_fit.fun))
+chi_V456N = 1-scipy.stats.chi2.cdf(x=D,df=1)
+print ("Answer for V456D mutation:", chi_V456N)
+
 
