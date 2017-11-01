@@ -64,7 +64,43 @@ print "The half maximal growth concentration is: {}.".format(int(round(fit.x[1])
 
 ###########################################################
 
+
 #Q3
+decomposition = pandas.read_csv('leafDecomp.csv')
+#constant rate model
+def nllike(p,obs): 
+        B0=p[0]
+        sigma=p[1]
+        expected=B0
+        nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+        return nll
+Guess=numpy.array([1,1,1])
+fit=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
+print(fit.x)
+#linear model
+def nllike(p,obs): 
+        B0=p[0]
+        B1=p[1]
+        sigma=p[2]
+        expected=B0+B1*obs.Ms
+        nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+        return nll
+Guess=numpy.array([1,1,1])
+fit=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
+print(fit.x)
+#hump-shaped model
+def nllike(p,obs): 
+        B0=p[0]
+        B1=p[1]
+        B3=p[2]
+        sigma=p[3]
+        expected=B0+B1*obs.Ms+B2*B2*###### not sure what goes here
+        nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+        return nll
+Guess=numpy.array([1,1,1])
+fit=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
+print(fit.x)
+
 
 """
 3. As you’ll see next week, when recreating biological processes in
