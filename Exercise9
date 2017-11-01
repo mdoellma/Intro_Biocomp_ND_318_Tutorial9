@@ -12,6 +12,9 @@ from scipy.stats import chi2
     ponzr1 = pandas.read_csv("ponzr1.csv",header=0,sep=",")
     #Pull out only control and treatment you are interested in
         #var1=dataframe.loc[dataframe.col1name.isin([list of vals in column]),:]
+        M124K=ponzr1.loc[ponzr1.mutation.isin(['WT','M124K']),:]
+        V456D=ponzr1.loc[ponzr1.mutation.isin(['WT','V456D']),:]
+        I213N=ponzr1.loc[ponzr1.mutation.isin(['WT','I213N']),:]
     #Make new data frame with 'group' column (your x=0 or x=1)
         #var2=pandas.DataFrame({'y':var1.col2name, 'x':{})
     #Designate 'treatment' group as x=1
