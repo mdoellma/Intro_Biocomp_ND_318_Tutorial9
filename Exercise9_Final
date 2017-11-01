@@ -1,0 +1,97 @@
+# import packages
+import numpy
+import pandas
+from scipy.stats import norm
+from scipy.optimize import minimize
+from scipy.stats import chi2
+#Part 1:likelihood ratio test to determine which of the three mutations significantly reduced the expression of ponzr1
+#load data
+ponzr1 = pandas.read_csv("ponzr1.csv",header=0,sep=",")
+#Pull out only control and treatment you are interested in
+#var1=dataframe.loc[dataframe.col1name.isin([list of vals in column]),:]
+M124K=ponzr1.loc[ponzr1.mutation.isin(['WT','M124K']),:]
+V456D=ponzr1.loc[ponzr1.mutation.isin(['WT','V456D']),:]
+I213N=ponzr1.loc[ponzr1.mutation.isin(['WT','I213N']),:]
+#Make new data frame with 'group' column (your x=0 or x=1)
+#var2=pandas.DataFrame({'y':var1.col2name, 'x':})
+#Designate 'treatment' group as x=1
+#var2.loc[var1.col1name=='name of treatment group', 'x']=1
+M124KFrame=pandas.DataFrame({'y':M124K.ponzr1Counts,'x':0})
+M124KFrame.loc[M124K.mutation=='M124K','x']=1
+V456DFrame=pandas.DataFrame({'y':V456D.ponzr1Counts,'x':0})
+V456DFrame.loc[V456D.mutation=='V456D','x']=1
+I213NFrame=pandas.DataFrame({'y':I213N.ponzr1Counts,'x':0})
+I213NFrame.loc[I213N.mutation=='I213N','x']=1
+
+#Define function for null model 
+def nllike_null(p_null,obs_null):
+    B0_null=p_null[0]
+    sigma_null=p_null[1]
+    expected_null=B0_null
+    nll_null=-1*norm(expected_null,sigma_null).logpdf(obs_null.y).sum()
+    return nll_null 
+#define function for treatment model 
+def nllike_treat(p_treat,obs_treat):
+    B0_treat=p_treat[0]
+    B1_treat=p_treat[1]
+    sigma_treat=p_treat[2]
+    expected_treat=B0_treat+B1_treat*obs_treat.x
+    nll_treat=-1*norm(expected_treat,sigma_treat).logpdf(obs_treat.y).sum()
+    return nll_treat 
+    
+#Minimize nllike to estimate parameters
+#Estimate parameters for mutation M124K 
+#Null model M124K 
+initialGuess_null=numpy.array([1,1])
+fit_null_M124K=minimize(nllike_null,initialGuess_null,method="Nelder-Mead",options={'disp':True},args=M124KFrame) #for first mutation
+print("estimated parameters for null model of M124K")
+print(fit_null_M124K.x)
+print("negative log likelihood for null model of M124K")
+nll_null_M124K=fit_null_M124K.fun
+print(nll_null_M124K) #prints negative log likelihood value for null model of M124K 
+#Treatment Model 
+initialGuess_treat=numpy.array([1,1,1])
+fit_treat_M124K=minimize(nllike_treat,initialGuess_treat,method="Nelder-Mead",options={'disp':True},args=M124KFrame) #for first mutation
+print("estimated parameters for treatment model of M124K")
+print(fit_treat_M124K.x)
+print("negative log likelihood for treatment model of M124K")
+nll_treat_M124K=fit_treat_M124K.fun
+print(nll_treat_M124K) #prints negative log likelihood values
+
+#Likelihood ratio test for mutation M124K
+D_M124K=2*(nll_null_M124K-nll_treat_M124K)
+print("D value for M124K likelihood")
+print(D_M124K)
+p_value_M124K=1-scipy.stats.chi2.cdf(x=D_M124K,df=1)
+print("p-value for effect of M124K mutation")
+print(p_value_M124K)
+print("no effect of M124K mutation")
+
+#Minimize nllike to estimate parameters
+#Estimate parameters for mutation V456D 
+#Null model V456D 
+initialGuess_null=numpy.array([1,1])
+fit_null_V456D=minimize(nllike_null,initialGuess_null,method="Nelder-Mead",options={'disp':True},args=V456DFrame) #for second mutation
+print("estimated parameters for null model of V456D")
+print(fit_null_V456D.x)
+print("negative log likelihood for null model of V456D")
+nll_null_V456D=fit_null_V456D.fun
+print(nll_null_V456D) #prints negative log likelihood value for null model of V456D 
+#Treatment Model 
+initialGuess_treat=numpy.array([1,1,1])
+fit_treat_V456D=minimize(nllike_treat,initialGuess_treat,method="Nelder-Mead",options={'disp':True},args=V456DFrame) #for second mutation
+print("estimated parameters for treatment model of V456D")
+print(fit_treat_V456D.x)
+print("negative log likelihood for treatment model of V456D")
+nll_treat_V456D=fit_treat_V456D.fun
+print(nll_treat_V456D) #prints negative log likelihood values
+
+#Likelihood ratio test for mutation M124K
+D_V456D=2*(nll_null_V456D-nll_treat_V456D)
+print("D value for V456D likelihood")
+print(D_V456D)
+p_value_V456D=1-scipy.stats.chi2.cdf(x=D_V456D,df=1)
+print("p-value for effect of V456D mutation")
+print(p_value_V456D)
+print("significant effect of V456D mutation")
+    
