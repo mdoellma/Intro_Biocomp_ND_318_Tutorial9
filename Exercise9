@@ -10,22 +10,65 @@ from scipy.stats import chi2
 # [1] likelihood ratio test to determine which of the three mutations significantly reduced the expression of ponzr1
 #load data
 ponzr1 = pandas.read_csv("ponzr1.csv",header=0,sep=",")
+
 #Pull out only control and treatment you are interested in
 #var1=dataframe.loc[dataframe.col1name.isin([list of vals in column]),:]
 M124K=ponzr1.loc[ponzr1.mutation.isin(['WT','M124K']),:]
 V456D=ponzr1.loc[ponzr1.mutation.isin(['WT','V456D']),:]
 I213N=ponzr1.loc[ponzr1.mutation.isin(['WT','I213N']),:]
+
 #Make new data frame with 'group' column (your x=0 or x=1)
 #var2=pandas.DataFrame({'y':var1.col2name, 'x':{})
 M124Kframe=pandas.DataFrame({'y':M124K.ponzr1Counts, 'x':0})
 V456Dframe=pandas.DataFrame({'y':V456D.ponzr1Counts, 'x':0})
 I213Nframe=pandas.DataFrame({'y':I213N.ponzr1Counts, 'x':0})
+
 #Designate 'treatment' group as x=1
 #var2.loc[var1.col1name=='name of treatment group', 'x']=1
 M124Kframe.loc[M124K.mutation=='M124K','x']=1
 V456Dframe.loc[V456D.mutation=='V456D','x']=1
 I213Nframe.loc[I213N.mutation=='I213N','x']=1
-print(M124Kframe,V456Dframe,I213Nframe)
+
+#define functions
+#Null model functions
+def nllikeNull(p,obs):
+    B0=p[0]
+    sigma=p[1]
+    expected=B0
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
+    return nll 
+#Null model - M124K
+initialGuess=numpy.array([1,1])
+fit=minimize(nllikeNull,initialGuess,method="Nelder-Mead",options={'disp':True},args=M124Kframe) #for first mutation
+print(fit.fun) #prints negative log likelihood values
+#Null model - V456D
+initialGuess=numpy.array([1,1])
+fit=minimize(nllikeNull,initialGuess,method="Nelder-Mead",options={'disp':True},args=V456Dframe)
+print(fit.fun)
+#Null model - I213N
+initalGuess=numpy.array([1,1])
+fit=minimize(nllikeNull,initialGuess,method="Nelder-Mead",options={'disp':True},args=I213Nframe)
+print(fit.fun)
+
+#Model functions
+def nllike(p,obs):
+    B0=p[0]
+    B1=p[1]
+    sigma=p[2]
+    expected=B0+B1*obs.x
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
+#M124K model
+initialGuess=numpy.array([1,1,1])
+fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp':True},args=M124Kframe)
+print(fit.fun)
+#V456D model
+initialGuess=numpy.array([1,1,1])
+fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp':True},args=V456Dframe)
+print(fit.fun)
+#I213N model
+initialGuess=numpy.array([1,1,1])
+fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp':True},args=I213Nframe)
+print(fit.fun)
 
 
 # [2] "MmarinumGrowth.csv" estimate the maximum growth rate (umax) and the half-saturation constant (Ks)
