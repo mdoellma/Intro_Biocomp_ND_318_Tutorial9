@@ -38,10 +38,12 @@ def test_null(data, control, treat):
 data = pandas.read_csv('ponzr1.csv')
 control = 'WT'
 muts = []
+#creates lists of data for future comparison
 for item in data.mutation.unique():
     if item != control:
         muts.append(item)
 
+#runs tests for p-values and determines if mutations significantly affected expression
 for condition in muts:
     p_val = test_null(data, control, condition)
     if p_val <= 0.05:
@@ -53,20 +55,27 @@ for condition in muts:
 ###########################################################
 
 #Q2#######################################################
+#This code will determine the maximum growth rate and half-maximal growth 
+## concentration of cell growth data. 
 
+#reads csv file
 growth_data = pandas.read_csv('MmarinumGrowth.csv')
+#creates the model we are interested in
 model = 'p[0] * obs[x] / (obs[x] + p[1])'
-guess = 
+guess = numpy.array([1,1,1])
 fit = minimize(nllike, guess, method="Nelder-Mead", options={'disp': True}, args=(growth_data, model, 'S', 'u'))
 
 print "The maximum growth rate is: {:.6}.".format(fit.x[0])
 print "The half maximal growth concentration is: {}.".format(int(round(fit.x[1])))
 
 ###########################################################
+#This code will create three models for one set of data and determine the p-values
+# when comparing them. 
 
 #Q3
+#reads csv file
 decomposition = pandas.read_csv('leafDecomp.csv')
-#constant rate model
+#This estimates the negative log likelihood using a constant rate model.
 def nllike(p,obs): 
         B0=p[0]
         sigma=p[1]
@@ -76,7 +85,7 @@ def nllike(p,obs):
 Guess=numpy.array([1,1])
 fit=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
 print(fit.x)
-#linear model
+#This estimates the negative log likelihood using a linear model.
 def nllike(p,obs): 
         B0=p[0]
         B1=p[1]
@@ -87,7 +96,7 @@ def nllike(p,obs):
 Guess=numpy.array([1,1,1])
 fit2=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
 print(fit2.x)
-#hump-shaped model
+#This estimates the negative log likelihood using a quadratic model.
 def nllike(p,obs): 
         B0=p[0]
         B1=p[1]
@@ -100,61 +109,22 @@ Guess=numpy.array([200,10,-.02,1])
 fit3=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
 print(fit3.x)
 
+#This saves the nll functions as variables to be called during the comparison of models below. 
 nllalt=fit.fun
 nllnul=fit2.fun
 nllnul2=fit3.fun
 
-#comparing constant rate model and linear model
+#This compares the constant rate model and linear model and returns a p-value.
 pval= 1 - chi2.cdf(x=2*(nllalt-nllnul), df=1)
 print "The p-value when comparing the constant rate model and linear model is {0}".format(pval)
-#comparing linear model and hump-shaped model
+#This compares the linear model and quadratic model and returns a p-value.
 pval=1 - chi2.cdf(x=2*(nllnul-nllnul2), df=1)
 print "The p-value when comparing the linear model and quadratic model is {0}".format(pval)
-#comparing constant rate model and humptydumpty model
+#This compares constant rate model and quadratic model and returns a p-value.
 pval=1-chi2.cdf(x=2*(nllalt-nllnul2), df=2)
 print "The p-value when comparing the constant rate model and quadratic model is {0}".format(pval)
 """
-3. As you’ll see next week, when recreating biological processes in
-simulation models we often make strong simplifying assumptions.
 
-The degree to which we simplify the representation of a biological
-process in a simulation model is often guided by observational or
-experimental data. One way to quantify the simplicity, or conversely
-complexity, of a simulation model is the number of parameters used.
-
-Imagine we want to model decomposition of leaves (d) in the soils of
-a forest as a function of water availability (measured as soil
-moisture, Ms).
-
-For this aspect of our simulation model we want to keep the model as
-simple (i.e. fewest parameters) as possible, but also want to capture
-the “shape” of the relationship between decomposition and soil
-moisture.
-
-Using the observations in “leafDecomp.csv” determine whether we
-should use a constant rate for all soil moistures (d = a), a linear
-response of decomposition to soil moisture (d = a + bMs), or a
-hump-shaped response of decomposition to soil moisture
-(d = a+bMs +cM2 s). Hint: You can use the likelihood ratio test to
-compare these models too. This is because the likelihood ratio test
-can be used to compare any set of models that are subsets of each
-other. You know one model is a subset of another if you can set a
-parameter equal to zero or some non-zero constant and have the same
-equation for both models. Also note that the degrees of freedom used
-in the chi-squared distribution is determined by the diﬀerence in
-the number of parameters between the two models.
-
-In the t-test example above, that will always be 1, but in this case
-it will be 1 or 2 depending on which models you are comparing.
-
-ANSWERS:
-Constant fit: B0 ~ 589.7, sigma ~ 164
-Linear fit: B0 ~ 318, B1 ~ 6.3, sigma ~ 54
-Quadratic fit: B0 ~ 180, B1 ~ 15.7, B2 ~ -0.11, sigma ~ 10.7
-The quadratic model is by for the best and the linear model is 
-a lot better than the constant or null model. The p-values for 
-the likelihood ratio tests should all be essentially zero (~1e-20 
-or less).
 """
 def main():
     pass
