@@ -74,7 +74,7 @@ def nllike(p,obs):
         expected=B0
         nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
         return nll
-Guess=numpy.array([1,1,1])
+Guess=numpy.array([1,1])
 fit=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
 print(fit.x)
 #linear model
@@ -92,12 +92,12 @@ print(fit.x)
 def nllike(p,obs): 
         B0=p[0]
         B1=p[1]
-        B3=p[2]
+        B2=p[2]
         sigma=p[3]
-        expected=B0+B1*obs.Ms+B2*B2*###### not sure what goes here
+        expected=B0+B1*obs.Ms+B2*obs.Ms*obs.Ms
         nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
         return nll
-Guess=numpy.array([1,1,1])
+Guess=numpy.array([1,1,1,1])
 fit=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
 print(fit.x)
 
