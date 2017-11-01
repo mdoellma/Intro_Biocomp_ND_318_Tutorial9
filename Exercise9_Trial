@@ -29,16 +29,31 @@ I213NFrame.loc[I213N.mutation=='I213N','x']=1
 #print(V456DFrame)
 #print(I213NFrame)
 
-#define function
-def nllike(p,obs):
-    B0=p[0]
-    sigma=p[1]
-    expected=B0
-    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
-    return nll 
-initialGuess=numpy.array([1,1])
-fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp':True},args=M124KFrame) #for first mutation
+#define function for null model of first mutation
+def nllike_null(p_null,obs_null):
+    B0_null=p_null[0]
+    sigma_null=p_null[1]
+    expected_null=B0_null
+    nll_null=-1*norm(expected_null,sigma_null).logpdf(obs_null.y).sum()
+    return nll_null 
+initialGuess_null=numpy.array([1,1])
+fit=minimize(nllike_null,initialGuess_null,method="Nelder-Mead",options={'disp':True},args=M124KFrame) #for first mutation
+print("negative log likelihood for null model of M124K")
 print(fit.fun) #prints negative log likelihood values
+
+#define function for treatment model 
+def nllike_treat(p_treat,obs_treat):
+    B0_treat=p_treat[0]
+    B1_treat=p_treat[1]
+    sigma_treat=p_treat[2]
+    expected_treat=B0_treat+B1_treat*obs_treat.x
+    nll_treat=-1*norm(expected_treat,sigma_treat).logpdf(obs_treat.y).sum()
+    return nll_treat
+initialGuess_treat=numpy.array([1,1,1])
+fit=minimize(nllike_treat,initialGuess_treat,method="Nelder-Mead",options={'disp':True},args=M124KFrame) #for first mutation
+print("negative log likelihood for treatment model of M124K")
+print(fit.fun) #prints negative log likelihood values
+
 
 
 # [2] "MmarinumGrowth.csv" estimate the maximum growth rate (umax) and the half-saturation constant (Ks)
