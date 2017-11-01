@@ -64,7 +64,6 @@ print "The half maximal growth concentration is: {}.".format(int(round(fit.x[1])
 
 ###########################################################
 
-
 #Q3
 decomposition = pandas.read_csv('leafDecomp.csv')
 #constant rate model
@@ -86,8 +85,8 @@ def nllike(p,obs):
         nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
         return nll
 Guess=numpy.array([1,1,1])
-fit=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
-print(fit.x)
+fit2=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
+print(fit2.x)
 #hump-shaped model
 def nllike(p,obs): 
         B0=p[0]
@@ -97,11 +96,23 @@ def nllike(p,obs):
         expected=B0+B1*obs.Ms+B2*obs.Ms*obs.Ms
         nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
         return nll
-Guess=numpy.array([1,1,1,1])
-fit=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
-print(fit.x)
+Guess=numpy.array([200,10,-.02,1])
+fit3=minimize(nllike,Guess,method="Nelder-Mead",options={'disp': True},args=decomposition)
+print(fit3.x)
 
+nllalt=fit.fun
+nllnul=fit2.fun
+nllnul2=fit3.fun
 
+#comparing constant rate model and linear model
+pval= 1 - chi2.cdf(x=2*(nllalt-nllnul), df=1)
+print "The p-value when comparing the constant rate model and linear model is {0}".format(pval)
+#comparing linear model and hump-shaped model
+pval=1 - chi2.cdf(x=2*(nllnul-nllnul2), df=1)
+print "The p-value when comparing the linear model and quadratic model is {0}".format(pval)
+#comparing constant rate model and humptydumpty model
+pval=1-chi2.cdf(x=2*(nllalt-nllnul2), df=2)
+print "The p-value when comparing the constant rate model and quadratic model is {0}".format(pval)
 """
 3. As you’ll see next week, when recreating biological processes in
 simulation models we often make strong simplifying assumptions.
