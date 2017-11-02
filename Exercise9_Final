@@ -166,15 +166,15 @@ fit=minimize(Constant,initialGuess,method="Nelder-Mead",options={'disp':True},ar
 print("parameter estimates for constant model of leafDecomp")
 print(fit.x)
 print("negative log likelihood for constant model")
-ConstantNll=fit.fun
+ConstantNll=fit.fun #this is the negative log likelihood for the constant model, use later for comparions to get D and p-value
 print(ConstantNll)
     
 def Linear(p,obs):
     B0=p[0]
     B1=p[1]
     sigma=p[2]
-    expected=B0+B1*obs.Ms
-    nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+    expected=B0+B1*obs.Ms #use obs.Ms b/c the data frame doesn't use x and y 
+    nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum() #use obs.decomp b/c dataframe doesn't use x and y 
     return nll 
 #Guess for slope=15 intercept=150 sigma=1
 initialGuess=numpy.array([150,15,1])
@@ -182,7 +182,7 @@ fit=minimize(Linear,initialGuess,method="Nelder-Mead",options={'disp':True},args
 print("parameter estimates for linear model of leafDecomp")
 print(fit.x)
 print("negative log likelihood for linear model")
-LinearNll=fit.fun
+LinearNll=fit.fun #this is the negative log likelihood for the linear model, use later for comparions to get D and p-value
 print(LinearNll)
 
 def Quadratic(p,obs):
@@ -199,9 +199,13 @@ fit=minimize(Quadratic,initialGuess,method="Nelder-Mead",options={'disp':True},a
 print("parameter estimates for quadratic model of leafDecomp")
 print(fit.x)
 print("negative log likelihood for quadratic model")
-QuadraticNll=fit.fun
+QuadraticNll=fit.fun #this is the negative log likelihood for the quadratic model, use later for comparions to get D and p-value
 print(QuadraticNll)
 
    
 #compare the three models using pair-wise likelihood ratio tests
 #(df) for chi-squared distribution is equal to the difference in the number of parameters (1 - model 1 to model 2; 1 - model 2 to model 3; 2 - model 1 to model 3)
+#model 1 (constant) has 2 parameters
+#model 2 (linear) has 3 parameters
+#model 3 (quadratic) has 4 parameters 
+#degrees of freedom will be 1 or 2 depending on comparsion 
