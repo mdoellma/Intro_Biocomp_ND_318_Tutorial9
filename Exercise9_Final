@@ -144,7 +144,21 @@ print(fit.x)
 
 #Part 3
 #load data
+leafDecomp=pandas.read_csv("leafDecomp.csv",header=0,sep=",")
+#Plot data
+ggplot(leafDecomp,aes(x='Ms',y='decomp'))+geom_point()+theme_classic()
 #define three different functions (y=B0+error, y=B0+B1*x+error, y=B0+B1*x+B2*x^2+error)
+def Constant(p,obs):
+    B0=p[0]
+    sigma=p[1]
+    
+    expected=B0
+    nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+    return nll 
+    
+def Linear:
+def Quadratic:
+
 #estimate the parameters for each of the three likelihood functions
     #use the same data for all functions
     #initial guess for the first model can be guessed at by eye-balling the mean of all decomposition values
