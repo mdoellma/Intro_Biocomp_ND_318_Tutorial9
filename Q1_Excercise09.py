@@ -27,13 +27,33 @@ Var5=MyDataFrame.loc[MyDataFrame.mutation.isin(["WT","I213N"]),:]
 Var6=pandas.DataFrame({'y':Var5.ponzr1Counts,'x':0})
 Var6.loc[Var5.mutation=="I213N","x"]=1
 
-def nllike(p,obs):
+#p is your guesses. One for each parameter (B0,B1,alpha). Use mean of control group for B0 and mean of control-mean of B1 group for B1. 1 for alpha
+#obs refers to my data frame
+#need to define 2 custom functions. One for our T-test and one for the Null model
+def nllike(guess=[2395,56,1],Var2):
 	B0=p[0]
 	B1=p[1]
 	sigma=p[2]
-	expected=B0+B1*obs.x
-	nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
+	expected=B0+B1*Var2.x
+	nll=-1*norm(expected,sigma).logpdf(Var2.y).sum()
 	return nll
+
+def nllikeNull(guess=2395],obs):
+        B0=p[0]
+        expected=B0
+        nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
+        return nll
+
+#need to use the minimize function to check wheither the parameters(p) we guessed/passed are true
+#need a fit function for each comparison (ie WT vs M, WT vs V, WT vs I) changing only the function name for each iteration and changing the dataframe for each comparison
+
+fit=minimize(function,initialVals,method="Nelder-Mead",options={'disp':True},args=observedData)
+fit=minimize(function,initialVals,method="Nelder-Mead",options={'disp':True},args=observedData)
+fit=minimize(function,initialVals,method="Nelder-Mead",options={'disp':True},args=observedData)
+fit=minimize(function,initialVals,method="Nelder-Mead",options={'disp':True},args=observedData)
+fit=minimize(function,initialVals,method="Nelder-Mead",options={'disp':True},args=observedData)
+fit=minimize(function,initialVals,method="Nelder-Mead",options={'disp':True},args=observedData)
+
 	
 #likelihood ratio test
 pval=1-chi2.cdf(x=2*(),df=1)
