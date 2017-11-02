@@ -9,18 +9,27 @@ from scipy.optimize import minimize
 from scipy.stats import norm, chi2
 
 def nllike(p, obs, x='x', y='y', model='p[0]'):
+    """
+    Returns negative log likelihood of model (default constant rate)
+        with parameters p to describe the 2D data obs with ind. and dep.
+        variables x and y.        
+    """
     return -1 * norm(eval(model), p[-1]).logpdf(obs[y]).sum()
 
 def test_null(data, control, treat):
+    """
+    Returns the chi2 p value of the null hypothesis that the segment of
+        data represented by control is not significantly different
+        than the segment represented by treat.
+    """
     guess = numpy.array([1, 1, 1])
     control_x = [0 for v in data.mutation if v == control]
     control_y = [data.iloc[i][1] for i in range(len(data)) if data.iloc[i][0] == control]
     treat_x = [1 for v in data.mutation if v == treat]
     treat_y = [data.iloc[i][1] for i in range(len(data)) if data.iloc[i][0] == treat]
 
-    d = {'x': control_x + treat_x,
-         'y': control_y + treat_y}
-    df = pandas.DataFrame(d)
+    df = pandas.DataFrame({'x': control_x + treat_x,
+                           'y': control_y + treat_y})
 
     model1 = 'p[0] + p[1] * obs[x]' # model treating two conditions (exp. vs. control) differently
     args1 = (df, 'x', 'y', model1)
