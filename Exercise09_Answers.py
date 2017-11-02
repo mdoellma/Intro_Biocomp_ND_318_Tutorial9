@@ -118,7 +118,7 @@ def q3solution():
     #This compares constant rate model and quadratic model and returns a p-value.
     pval = 1-chi2.cdf(x=2*(nllalt-nllnul2), df=2)
     print "The p-value when comparing the constant rate model and quadratic model is %s." %pval
-    print "Any model may be used, but the constant rate model is the simplest."
+    print "The quadratic model best fits the shape of this data."
 if __name__ == '__main__':
     print "Question 1:"
     q1solution()
