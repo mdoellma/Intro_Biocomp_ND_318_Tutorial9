@@ -1,5 +1,5 @@
 #set working directory
-os.chdir('/Users/brittnibertolet/Desktop/bcTutorials/Intro_Biocomp_ND_318_Tutorial9/')
+os.chdir('/Users/Chloe/Desktop/data-shell/Intro_Biocomp_ND_318_Tutorial9/')
 
 #add packages
 import numpy
@@ -67,6 +67,25 @@ mar=pandas.read_csv("MmarinumGrowth.csv",header=0)
 mar.head()
 #visualize data
 ggplot(mar,aes(x='S',y='u'))+geom_point()+theme_classic()
+
+
+### Custom likelihood function 
+def nllike(p,obs):
+    B0=p[0]
+    B1=p[1]
+    sigma=p[2]
+    
+    expected=B0+B1*obs.x
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
+    return nll
+
+### estimate parameters by minimizing the negative log likelihood
+mar.columns=['x', 'y']
+initialGuess=numpy.array([1,1,1])
+fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp': True},args=mar)
+
+# attribute 'x' is a list of the most likely parameter values 
+print(fit.x)
 
 #3
 #add data 'leafDecomp.csv'
