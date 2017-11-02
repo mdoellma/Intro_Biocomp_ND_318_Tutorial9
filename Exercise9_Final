@@ -128,8 +128,19 @@ print("no effect of I213N mutation")
 #load data
 MmarinumGrowth = pandas.read_csv("MmarinumGrowth.csv",header=0,sep=",")
 #define function
+def Monod(p,obs):
+    umax=p[0]
+    Ks=p[1]
+    sigma=p[2]
 #'expected' line needs to reflect the equation provided in the exercise - there are 2 parameters plus sigma
+    expected=umax*(obs.S/(obs.S+Ks))
+    nll=-1*norm(expected,sigma).logpdf(obs.u).sum()
+    return nll
 #estimate the parameters by minimizing the negative log likelihood
+initialGuess=numpy.array([1,1,1])
+fit=minimize(Monod,initialGuess,method="Nelder-Mead",options={'disp':True},args=MmarinumGrowth)
+print("Estimated parameters for umax, Ks, and sigma")
+print(fit.x)
 
 #Part 3
 #load data
