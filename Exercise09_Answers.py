@@ -8,8 +8,8 @@ import pandas
 from scipy.optimize import minimize
 from scipy.stats import norm, chi2
 
-def nllike(p, obs, model, x, y):
-    return -1 * norm(eval(model), p[2]).logpdf(obs[y]).sum()
+def nllike(p, obs, model, x, y):    
+    return -1 * norm(eval(model), p[-1]).logpdf(obs[y]).sum()
 
 def test_null(data, control, treat):
     guess = numpy.array([1, 1, 1])
@@ -81,39 +81,29 @@ def q3solution():
     decomposition = pandas.read_csv('leafDecomp.csv')
     #This estimates the negative log likelihood.
     #   Assumes constant rate, linear or quadratic model.
-    def nllike(p, obs):
-        B0 = p[0]
-        try:
-            p[2]
-            B1 = p[1]
-        except IndexError:
-            B1 = 0
-        try:
-            p[3]
-            B2 = p[2]
-        except IndexError:
-            B2 = 0
-        sigma = p[-1]
-        expected = B0+B1*obs.Ms+B2*obs.Ms*obs.Ms
-        nll = -1*norm(expected, sigma).logpdf(obs.decomp).sum()
-        return nll
-
+    models = ['p[0]',
+              'p[0]+p[1]*obs[x]',
+              'p[0]+p[1]*obs[x]+p[2]*obs[x]**2']
     guess = numpy.array([1, 1])
-    fit = minimize(nllike, guess, method="Nelder-Mead", args=decomposition)
-    print fit.x
+
+    args1 = (decomposition, models[0], 'Ms', 'decomp')
+    fit1 = minimize(nllike, guess, method="Nelder-Mead", args=args1)
+    print fit1.x
     #This estimates the negative log likelihood using a linear model.
 
     guess = numpy.array([1, 1, 1])
-    fit2 = minimize(nllike, guess, method="Nelder-Mead", args=decomposition)
+    args2 = (decomposition, models[1], 'Ms', 'decomp')
+    fit2 = minimize(nllike, guess, method="Nelder-Mead", args=args2)
     print fit2.x
     #This estimates the negative log likelihood using a quadratic model.
 
     guess = numpy.array([200, 10, -.02, 1])
-    fit3 = minimize(nllike, guess, method="Nelder-Mead", args=decomposition)
+    args3 = (decomposition, models[2], 'Ms', 'decomp')
+    fit3 = minimize(nllike, guess, method="Nelder-Mead", args=args3)
     print fit3.x
 
     #This saves the nll functions as variables to be called during the comparison of models below.
-    nllalt = fit.fun
+    nllalt = fit1.fun
     nllnul = fit2.fun
     nllnul2 = fit3.fun
 
