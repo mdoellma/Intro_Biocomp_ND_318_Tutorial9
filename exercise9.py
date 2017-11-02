@@ -78,10 +78,17 @@ def nllike_K (p, obs):
     nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.u).sum()
     return nll
 
-#initial guess variable, supposedly minimizes the negative log likelihood but I don't know how this works
+#initial guess variable
 initialGuess=np.array([1,1,1])
-fit=minimize(nllike_K,initialGuess,method="Nelder-Mead",options={'disp': True},args=MG)
-print(fit)
+fitK=minimize(nllike_K,initialGuess,method="Nelder-Mead",options={'disp': True},args=MG)
+
+#displays the answers nicely
+A=round(fitK.x[0],2)
+B=round(fitK.x[1],2)
+C=round(fitK.x[2],2)
+print('Estimation of the maximum growth rate:',A)
+print('Estimation of the half-saturation constant:',B)
+print('Estimation of the sigma value:',C)
 ### End of Challenge 2 -----------------------------------------------------------------------------
 ###  Begin Challenge 3 -----------------------------------------------------------------------------
 #read in file
