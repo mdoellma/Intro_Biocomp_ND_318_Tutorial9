@@ -151,10 +151,13 @@ ggplot(leafDecomp,aes(x='Ms',y='decomp'))+geom_point()+theme_classic()
 def Constant(p,obs):
     B0=p[0]
     sigma=p[1]
-    
     expected=B0
     nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
     return nll 
+#Guess for mean of decomp values = 500
+initialGuess=numpy.array([500,1])
+fit=minimize(Constant,initialGuess,method="Nelder-Mead",options={'disp':True},args=leafDecomp)
+print(fit.x)
     
 def Linear:
 def Quadratic:
