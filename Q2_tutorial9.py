@@ -38,6 +38,19 @@ fitModel=minimize(nllike,guess,method="Nelder-Mead",options={'disp':True},args=M
 print(fitModel.x)
 print(fitModel.fun)
 #plot results
-ggplot(MyDataFrame,aes(x='u',y='S'))+geom_point()+theme_classic()
+ggplot(MyDataFrame,aes(x='S',y='u'))+geom_point()+theme_classic()
 
+#need to plot the fit of our model. Make x values from 0-1000
+S=numpy.arange(1000)
+#take the x values I just made and put the estimate from my model fit into the model equeation
 
+#fitModel.x[0] is umax
+#fitModel.x[1] is Ks
+
+Predictmu=fitModel.x[0]*S/(S+fitModel.x[1])
+
+#need to put in dataframe to plot
+PredictDF=pandas.DataFrame({'S':S,'u':Predictmu})
+
+#make a plot that includes original data with a line that is my prediction from the parameter estimate/model
+ggplot(MyDataFrame,aes(x='S',y='u'))+geom_point()+theme_classic()+geom_line(PredictDF,aes(x='S',y='u'))
