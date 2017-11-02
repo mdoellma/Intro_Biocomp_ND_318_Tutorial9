@@ -1,0 +1,32 @@
+import numpy
+import pandas
+data=pandas.read_csv('MmarinumGrowth.csv',header=0,sep=',')
+from scipy.optimize import minimize
+from scipy.stats import norm
+from scipy.stats import chi2
+from plotnine import *
+def nllike(p,obs):
+    B0=p[0]
+    B1=p[1]
+    sig=p[2]
+    expected=B0*(obs.x/(obs.x+B1))
+    nll=-1*norm(expected,sig).logpdf(obs.y).sum()
+    return nll
+
+sub1=pandas.DataFrame({'y':data.u,'x':data.S})
+
+initialGuess=numpy.array([1,1,1])
+fit=minimize(nllike,initialGuess,method="Nelder-Mead",options={'disp': True},args=sub1)
+
+print "The maximum growth rate is"
+print fit.x[0]
+
+print "Ks is"
+print fit.x[1]
+
+#1. import packages
+#2. load data
+#3. define a custom function
+    #a. the "expected" line needs to reflect the equation provided in the exercise, there are 2 parameters for this equation plus sigma
+#4. estimate the parameters by minimizing the negative log likelihood
+    #a. look at the handout from lecture to accomplish this

@@ -1,0 +1,65 @@
+import numpy
+import pandas
+data=pandas.read_csv('ponzr1.csv',header=0,sep=',')
+from scipy.optimize import minimize
+from scipy.stats import norm
+from scipy.stats import chi2
+from plotnine import *
+def nllike1(p,obs):
+    B0=p[0]
+    sig=p[1]
+    expected=B0
+    nll=-1*norm(expected,sig).logpdf(obs.y).sum()
+    return nll
+
+def nllike2(p,obs):
+    B0=p[0]
+    B1=p[1]
+    sig=p[2]
+    expected=B0+B1*obs.x
+    nll=-1*norm(expected,sig).logpdf(obs.y).sum()
+    return nll
+
+subset1=data.loc[data.mutation.isin(['WT','I213N']),:]
+subset2=data.loc[data.mutation.isin(['WT','M124K']),:]
+subset3=data.loc[data.mutation.isin(['WT','V456D']),:]
+
+sub1=pandas.DataFrame({'y':subset1.ponzr1Counts,'x':0})
+sub1.loc[subset1.mutation=='I213N','x']=1
+sub2=pandas.DataFrame({'y':subset2.ponzr1Counts,'x':0})
+sub2.loc[subset2.mutation=='M124K','x']=1
+sub3=pandas.DataFrame({'y':subset3.ponzr1Counts,'x':0})
+sub3.loc[subset3.mutation=='V456D','x']=1
+
+initialGuess1=numpy.array([1,1])
+fit1=minimize(nllike1,initialGuess1,method="Nelder-Mead",options={'disp': True},args=sub1)
+fit2=minimize(nllike1,initialGuess1,method="Nelder-Mead",options={'disp': True},args=sub2)
+fit3=minimize(nllike1,initialGuess1,method="Nelder-Mead",options={'disp': True},args=sub3)
+initialGuess2=numpy.array([1,1,1])
+fit4=minimize(nllike2,initialGuess2,method="Nelder-Mead",options={'disp': True},args=sub1)
+fit5=minimize(nllike2,initialGuess2,method="Nelder-Mead",options={'disp': True},args=sub2)
+fit6=minimize(nllike2,initialGuess2,method="Nelder-Mead",options={'disp': True},args=sub3)
+
+D1=2*(fit1.fun-fit4.fun)
+D2=2*(fit2.fun-fit5.fun)
+D3=2*(fit3.fun-fit6.fun)
+
+1-chi2.cdf(x=D1,df=1)
+1-chi2.cdf(x=D2,df=1)
+1-chi2.cdf(x=D3,df=1)
+
+print fit1
+#1. load packages
+#2. load data
+#3. write two likelihood functions
+    #a. this means you need to create two custom functions with different variable names; these functions will differ in the length of the parameter vector and the equation used to calculate "expected"
+#4. subset the data for each mutation; the resulting dataframes should have 10 rows of wildtype data and 10 rows of mutant data.
+    #a. you can use subsetting with square brackets and a logic test to accomplish this
+    #-for Python:
+    #the .loc method of a pandas DataFrame allows this to be done and you can use the .isin or .str.contains methods to do the logic test. A line to do subsetting would look like this if all of the data was in a DataFrame called "data" and that DataFrame had a column name "mutation" (like the data we provided has)
+    #subset=data.loc[data.mutation.isin(['WT','I231N']),:]
+    #OR USING A REGULAR EXPRESSION
+    #subset=data.loc[data.mutation.str.contains('WT|I231N'),:]
+#5. estimate parameters for model #1 and model #2 for each subset of the data
+    #a. look at the handout from last week for this; remember that model #1 will have 2 parameters in the vector/list for initial guesses and model #2 will have 3 parameters
+#6. conduct the likelihood ratio test for each subset of data
