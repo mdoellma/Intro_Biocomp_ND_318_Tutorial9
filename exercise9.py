@@ -87,6 +87,38 @@ print(fit)
 #read in file
 LD=pd.read_csv('leafDecomp.csv')
 
+#an nll function that can take any number of Betas
+def nllike_v (p, obs):
+    B = []
+    x = obs.Ms
+    
+    #fill all B0 to Bn-1 because the last number is reserved for sigma
+    for i in range(len(p) - 1):
+        B.append(p[i])
+    sigma = p[len(p) - 1]
+    
+    #iterally build the expected value:
+    ### expected += B0 * x^0 = B0
+    ### expected += B1 * x^1 = B0 + B1 * x
+    ### expected += B2 * x^2 = B0 + B1 * x + B2 * x^2
+    expected = 0
+    for i in range(len(B)):
+        expected = expected + B[i] * (x ** i)
+        
+    #calculate nll
+    nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.decomp).sum()
+    return nll
+    
+#get the fit values
+fit_1 = minimize(nllike_v, [1,1], method="Nelder-Mead", options={'disp': True}, args=LD)
+fit_2 = minimize(nllike_v, [1,1,1], method="Nelder-Mead", options={'disp': True}, args=LD)
+fit_3 = minimize(nllike_v, [1,1,1,1], method="Nelder-Mead", options={'disp': True}, args=LD)
+
+#do the likelihood comparisons
+scipy.stats.chi2.sf((fit_1.fun - fit_2.fun) * 2,1)
+scipy.stats.chi2.sf((fit_2.fun - fit_3.fun) * 2,1)
+scipy.stats.chi2.sf((fit_1.fun - fit_3.fun) * 2,2)
+
 #constant rate maximum likelihood d=a
 def nllike_LDC (p, obs):
     B0 = p[0]
@@ -94,7 +126,7 @@ def nllike_LDC (p, obs):
     expected = B0
     nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.decomp).sum()
     return nll
-initialGuess=np.array([1,1])
+initialGuess=[1,1]
 fitLDC=minimize(nllike_LDC,initialGuess,method="Nelder-Mead",options={'disp': True},args=LD)
 
 #linear rate maximum likelihood d=a+bMs
@@ -105,7 +137,7 @@ def nllike_LDL (p, obs):
     expected = B0 + B1 * obs.Ms
     nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.decomp).sum()
     return nll
-initialGuess=np.array([1,1,1])
+initialGuess=[1,1,1]
 fitLDL=minimize(nllike_LDL,initialGuess,method="Nelder-Mead",options={'disp': True},args=LD)
 
 #quadratic rate maximum likelihood d=a+bMS+cMs^2
@@ -114,10 +146,16 @@ def nllike_LDQ (p, obs):
     B1 = p[1]
     B2 = p[2]
     sigma = p[3]
+    
     expected = B0 + (B1 * obs.Ms) + B2 * (obs.Ms**(2))
     nll = -1 * scipy.stats.norm(expected, sigma).logpdf(obs.decomp).sum()
     return nll
-initialGuess=np.array([1,1,1,1])
+initialGuess=[1,1,1,1]
 fitLDQ=minimize(nllike_LDQ,initialGuess,method="Nelder-Mead",options={'disp': True},args=LD)
-print(fitLDQ)
+
+#likelihood comparisons
+scipy.stats.chi2.sf((fitLDC.fun - fitLDL.fun) * 2,1)
+scipy.stats.chi2.sf((fitLDL.fun - fitLDQ.fun) * 2,1)
+scipy.stats.chi2.sf((fitLDC.fun - fitLDQ.fun) * 2,2)
+
 
