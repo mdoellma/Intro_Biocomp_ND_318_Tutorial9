@@ -55,7 +55,11 @@ def ttest (data, group1, group2):
         print ("No significance")
     print ("-----------------------------")
 
-#Perform t-tests
+#Perform t-tests and display answers
+print('******************************')
+print('Challenge 1 Answers')
+print('******************************')
+
 ttest(ponzr1, group1="WT", group2="M124K")
 ttest(ponzr1, group1="WT", group2="V456D")
 ttest(ponzr1, group1="WT", group2="I213N")
@@ -86,9 +90,18 @@ fitK=minimize(nllike_K,initialGuess,method="Nelder-Mead",options={'disp': True},
 A=round(fitK.x[0],2)
 B=round(fitK.x[1],2)
 C=round(fitK.x[2],2)
+
+print('******************************')
+print('Challenge 2 Answers')
+print('******************************')
+
+print('------------------------------')
 print('Estimation of the maximum growth rate:',A)
+print('------------------------------')
 print('Estimation of the half-saturation constant:',B)
+print('------------------------------')
 print('Estimation of the sigma value:',C)
+print('------------------------------')
 ### End of Challenge 2 -----------------------------------------------------------------------------
 ###  Begin Challenge 3 -----------------------------------------------------------------------------
 #read in file
@@ -161,8 +174,26 @@ initialGuess=[1,1,1,1]
 fitLDQ=minimize(nllike_LDQ,initialGuess,method="Nelder-Mead",options={'disp': True},args=LD)
 
 #likelihood comparisons
-scipy.stats.chi2.sf((fitLDC.fun - fitLDL.fun) * 2,1)
-scipy.stats.chi2.sf((fitLDL.fun - fitLDQ.fun) * 2,1)
-scipy.stats.chi2.sf((fitLDC.fun - fitLDQ.fun) * 2,2)
+A=scipy.stats.chi2.sf((fitLDC.fun - fitLDL.fun) * 2,1)
+B=scipy.stats.chi2.sf((fitLDL.fun - fitLDQ.fun) * 2,1)
+C=scipy.stats.chi2.sf((fitLDC.fun - fitLDQ.fun) * 2,2)
 
+#display the results
+print('******************************')
+print('Challenge 3 Answers')
+print('******************************')
 
+print('------------------------------')
+print('Constant response p-value:',A)
+print('------------------------------')
+print('Linear response p-value:',B)
+print('------------------------------')
+print('Quadratic response p-value:',C)
+print('------------------------------')
+if A<B and A<C:
+    print('Best Fit:','Constant',A)
+if B<A and B<C:
+    print('Best Fit:','Linear',B)
+if C<A and C<B:
+    print('Best Fit:','Quadratic',C)
+print('------------------------------')
