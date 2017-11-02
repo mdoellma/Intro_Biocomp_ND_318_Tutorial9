@@ -5,6 +5,8 @@ import scipy
 from scipy.stats import norm
 from scipy.optimize import minimize
 from scipy.stats import chi2
+from plotnine import *
+
 #Part 1:likelihood ratio test to determine which of the three mutations significantly reduced the expression of ponzr1
 #load data
 ponzr1 = pandas.read_csv("ponzr1.csv",header=0,sep=",")
