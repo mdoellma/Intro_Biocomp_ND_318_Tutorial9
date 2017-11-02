@@ -92,37 +92,35 @@ def q3solution():
 
     args1 = (decomposition, 'Ms', 'decomp')
     fit1 = minimize(nllike, array([1, 1]), method=METHOD, args=args1)
-    print fit1.x
+    print "Constant model y = B0 + error."
+    print "B0 = {0:.4}, error = {1:.4}".format(*fit1.x)
     #This estimates the negative log likelihood using a linear model.
 
     args2 = (decomposition, 'Ms', 'decomp', models[0])
     fit2 = minimize(nllike, array([1, 1, 1]), method=METHOD, args=args2)
-    print fit2.x
+    print "Linear model y = B0 + B1*x + error."
+    print "B0 = {0:.4}, B1 = {1:.4}, error = {2:.4}".format(*fit2.x)
     #This estimates the negative log likelihood using a quadratic model.
 
     args3 = (decomposition, 'Ms', 'decomp', models[1])
     fit3 = minimize(nllike, array([200, 10, -.02, 1]), method=METHOD, args=args3)
-    print fit3.x
-
-    #This saves the nll functions as variables to be called during the comparison of models below.
-    nllalt = fit1.fun
-    nllnul = fit2.fun
-    nllnul2 = fit3.fun
+    print "Quadratic model y = B0 + B1*x + B2*x^2 + error."
+    print "B0 = {0:.4}, B1 = {1:.4}, B2 = {2:.4}, error = {3:.4}".format(*fit3.x)
 
     #This compares the constant rate model and linear model and returns a p-value.
-    pval = 1 - chi2.cdf(x=2*(nllalt-nllnul), df=1)
-    print "The p-value when comparing the constant rate model and linear model is %s." %pval
+    pval = 1 - chi2.cdf(x=2*(fit1.fun - fit2.fun), df=1)
+    print "The p-value when comparing the constant rate model and linear model is %g." %pval
     #This compares the linear model and quadratic model and returns a p-value.
-    pval = 1 - chi2.cdf(x=2*(nllnul-nllnul2), df=1)
-    print "The p-value when comparing the linear model and quadratic model is %s." %pval
+    pval = 1 - chi2.cdf(x=2*(fit2.fun - fit3.fun), df=1)
+    print "The p-value when comparing the linear model and quadratic model is %g." %pval
     #This compares constant rate model and quadratic model and returns a p-value.
-    pval = 1-chi2.cdf(x=2*(nllalt-nllnul2), df=2)
-    print "The p-value when comparing the constant rate model and quadratic model is %s." %pval
-    print "The quadratic model best fits the shape of this data."
+    pval = 1-chi2.cdf(x=2*(fit1.fun - fit3.fun), df=2)
+    print "The p-value when comparing the constant rate model and quadratic model is %g." %pval
+    print "The quadratic model best fits the shape of this data and minimizes error."
 if __name__ == '__main__':
     print "Question 1:"
     q1solution()
-    print "Question 2:"
+    print "\nQuestion 2:"
     q2solution()
-    print "Question 3:"
+    print "\nQuestion 3:"
     q3solution()
