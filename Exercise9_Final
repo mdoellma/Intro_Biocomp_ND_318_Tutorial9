@@ -126,8 +126,9 @@ print("no effect of I213N mutation")
 
 #Part 2
 #load data
+MmarinumGrowth = pandas.read_csv("MmarinumGrowth.csv",header=0,sep=",")
 #define function
-#'expected' line needs to reflect the equation provided in teh exercise - there are 2 parameters plus sigma
+#'expected' line needs to reflect the equation provided in the exercise - there are 2 parameters plus sigma
 #estimate the parameters by minimizing the negative log likelihood
 
 #Part 3
