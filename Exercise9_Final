@@ -87,7 +87,7 @@ print("negative log likelihood for treatment model of V456D")
 nll_treat_V456D=fit_treat_V456D.fun
 print(nll_treat_V456D) #prints negative log likelihood values
 
-#Likelihood ratio test for mutation M124K
+#Likelihood ratio test for mutation V456D
 D_V456D=2*(nll_null_V456D-nll_treat_V456D)
 print("D value for V456D likelihood")
 print(D_V456D)
@@ -95,4 +95,31 @@ p_value_V456D=1-scipy.stats.chi2.cdf(x=D_V456D,df=1)
 print("p-value for effect of V456D mutation")
 print(p_value_V456D)
 print("significant effect of V456D mutation")
-    
+
+#Minimize nllike to estimate parameters
+#Estimate parameters for mutation I213N 
+#Null model I213N
+initialGuess_null=numpy.array([1,1])
+fit_null_I213N=minimize(nllike_null,initialGuess_null,method="Nelder-Mead",options={'disp':True},args=I213NFrame)
+print("estimated parameters for null model of I213N")
+print(fit_null_I213N.x)
+print("negative log likelihood for null model of I213N")
+nll_null_I213N=fit_null_I213N.fun
+print(nll_null_I213N) #prints negative log likelihood value for null model of I213N 
+#Treatment Model 
+initialGuess_treat=numpy.array([1,1,1])
+fit_treat_I213N=minimize(nllike_treat,initialGuess_treat,method="Nelder-Mead",options={'disp':True},args=I213NFrame)
+print("estimated parameters for treatment model of I213N")
+print(fit_treat_I213N.x)
+print("negative log likelihood for treatment model of I213N")
+nll_treat_I213N=fit_treat_I213N.fun
+print(nll_treat_I213N) #prints negative log likelihood values
+
+#Likelihood ratio test for mutation I213N
+D_I213N=2*(nll_null_I213N-nll_treat_I213N)
+print("D value for I213N likelihood")
+print(D_I213N)
+p_value_I213N=1-scipy.stats.chi2.cdf(x=D_I213N,df=1)
+print("p-value for effect of I213N mutation")
+print(p_value_I213N)
+print("no effect of I213N mutation")
