@@ -148,6 +148,10 @@ leafDecomp=pandas.read_csv("leafDecomp.csv",header=0,sep=",")
 #Plot data
 ggplot(leafDecomp,aes(x='Ms',y='decomp'))+geom_point()+theme_classic()
 #define three different functions (y=B0+error, y=B0+B1*x+error, y=B0+B1*x+B2*x^2+error)
+ #use the same data for all functions
+    #initial guess for the first model can be guessed at by eye-balling the mean of all decomposition values
+    #initial guess for the second model can be guessed at by eye-balling the intercept and slope of a line drawn through the data
+    #initial guess for the third model, try B0=200, B1=10, B2=-0.2, sigma=1
 def Constant(p,obs):
     B0=p[0]
     sigma=p[1]
@@ -157,15 +161,45 @@ def Constant(p,obs):
 #Guess for mean of decomp values = 500
 initialGuess=numpy.array([500,1])
 fit=minimize(Constant,initialGuess,method="Nelder-Mead",options={'disp':True},args=leafDecomp)
+print("parameter estimates for constant model of leafDecomp")
 print(fit.x)
+print("negative log likelihood for constant model")
+ConstantNll=fit.fun
+print(ConstantNll)
     
-def Linear:
-def Quadratic:
+def Linear(p,obs):
+    B0=p[0]
+    B1=p[1]
+    sigma=p[2]
+    expected=B0+B1*obs.Ms
+    nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+    return nll 
+#Guess for slope=15 intercept=150 sigma=1
+initialGuess=numpy.array([150,15,1])
+fit=minimize(Linear,initialGuess,method="Nelder-Mead",options={'disp':True},args=leafDecomp)
+print("parameter estimates for linear model of leafDecomp")
+print(fit.x)
+print("negative log likelihood for linear model")
+LinearNll=fit.fun
+print(LinearNll)
 
-#estimate the parameters for each of the three likelihood functions
-    #use the same data for all functions
-    #initial guess for the first model can be guessed at by eye-balling the mean of all decomposition values
-    #initial guess for the second model can be guessed at by eye-balling the intercept and slope of a line drawn through the data
-    #initial guess for the third model, try B0=200, B1=10, B2=-0.2, sigma=1
+def Quadratic(p,obs):
+    B0=p[0]
+    B1=p[1]
+    B2=p[2]
+    sigma=p[3]
+    expected=B0+B1*obs.Ms+B2*(obs.Ms*obs.Ms)
+    nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+    return nll 
+#Guess for quadratic B0=200, B1=10, B2=-0.2, sigma=1
+initialGuess=numpy.array([200,10,-0.2,1])
+fit=minimize(Quadratic,initialGuess,method="Nelder-Mead",options={'disp':True},args=leafDecomp)
+print("parameter estimates for quadratic model of leafDecomp")
+print(fit.x)
+print("negative log likelihood for quadratic model")
+QuadraticNll=fit.fun
+print(QuadraticNll)
+
+   
 #compare the three models using pair-wise likelihood ratio tests
-    #(df) for chi-squared distribution is equal to the difference in the number of parameters (1 - model 1 to model 2; 1 - model 2 to model 3; 2 - model 1 to model 3)
+#(df) for chi-squared distribution is equal to the difference in the number of parameters (1 - model 1 to model 2; 1 - model 2 to model 3; 2 - model 1 to model 3)
