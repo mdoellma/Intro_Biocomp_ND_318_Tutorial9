@@ -8,7 +8,7 @@ import pandas
 from scipy.optimize import minimize
 from scipy.stats import norm, chi2
 
-def nllike(p, obs, model, x, y):    
+def nllike(p, obs, x='x', y='y', model='p[0]'):
     return -1 * norm(eval(model), p[-1]).logpdf(obs[y]).sum()
 
 def test_null(data, control, treat):
@@ -22,15 +22,12 @@ def test_null(data, control, treat):
          'y': control_y + treat_y}
     df = pandas.DataFrame(d)
 
-    model0 = 'p[0]' # null hypothesis - same model describes control & experiment well
-    args0 = (df, model0, 'x', 'y')
-
     model1 = 'p[0] + p[1] * obs[x]' # model treating two conditions (exp. vs. control) differently
-    args1 = (df, model1, 'x', 'y')
+    args1 = (df, 'x', 'y', model1)
 
-    nullfit = minimize(nllike, guess, method="Nelder-Mead", args=args0)
+    nullfit = minimize(nllike, guess, method="Nelder-Mead", args=(df))
     treatfit = minimize(nllike, guess, method="Nelder-Mead", args=args1)
-    diff = abs(nllike(treatfit.x, df, model1, 'x', 'y') - nllike(nullfit.x, df, model0, 'x', 'y'))
+    diff = abs(nllike(treatfit.x, df, model=model1) - nllike(nullfit.x, df))
     return 1 - chi2.cdf(x=2*diff, df=1)
 
 def q1solution():
@@ -67,7 +64,7 @@ def q2solution():
     #creates the model we are interested in
     model = 'p[0] * obs[x] / (obs[x] + p[1])'
     guess = numpy.array([1, 1, 1])
-    fit = minimize(nllike, guess, method="Nelder-Mead", args=(growth_data, model, 'S', 'u'))
+    fit = minimize(nllike, guess, method="Nelder-Mead", args=(growth_data, 'S', 'u', model))
 
     print "The maximum growth rate is: {:.6}.".format(fit.x[0])
     print "The half maximal growth concentration is: {}.".format(int(round(fit.x[1])))
@@ -81,24 +78,23 @@ def q3solution():
     decomposition = pandas.read_csv('leafDecomp.csv')
     #This estimates the negative log likelihood.
     #   Assumes constant rate, linear or quadratic model.
-    models = ['p[0]',
-              'p[0]+p[1]*obs[x]',
+    models = ['p[0]+p[1]*obs[x]',
               'p[0]+p[1]*obs[x]+p[2]*obs[x]**2']
     guess = numpy.array([1, 1])
 
-    args1 = (decomposition, models[0], 'Ms', 'decomp')
+    args1 = (decomposition, 'Ms', 'decomp')
     fit1 = minimize(nllike, guess, method="Nelder-Mead", args=args1)
     print fit1.x
     #This estimates the negative log likelihood using a linear model.
 
     guess = numpy.array([1, 1, 1])
-    args2 = (decomposition, models[1], 'Ms', 'decomp')
+    args2 = (decomposition, 'Ms', 'decomp', models[0])
     fit2 = minimize(nllike, guess, method="Nelder-Mead", args=args2)
     print fit2.x
     #This estimates the negative log likelihood using a quadratic model.
 
     guess = numpy.array([200, 10, -.02, 1])
-    args3 = (decomposition, models[2], 'Ms', 'decomp')
+    args3 = (decomposition, 'Ms', 'decomp', models[1])
     fit3 = minimize(nllike, guess, method="Nelder-Mead", args=args3)
     print fit3.x
 
