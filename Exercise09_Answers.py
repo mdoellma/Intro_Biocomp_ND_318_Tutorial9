@@ -3,16 +3,18 @@ Exercise 9
 Authors: Grant Keller and Kathleen Nicholson
 """
 
-import numpy
+from numpy import array
 import pandas
 from scipy.optimize import minimize
 from scipy.stats import norm, chi2
+
+METHOD = 'Nelder-Mead'
 
 def nllike(p, obs, x='x', y='y', model='p[0]'):
     """
     Returns negative log likelihood of model (default constant rate)
         with parameters p to describe the 2D data obs with ind. and dep.
-        variables x and y.        
+        variables x and y.
     """
     return -1 * norm(eval(model), p[-1]).logpdf(obs[y]).sum()
 
@@ -22,7 +24,6 @@ def test_null(data, control, treat):
         data represented by control is not significantly different
         than the segment represented by treat.
     """
-    guess = numpy.array([1, 1, 1])
     control_x = [0 for v in data.mutation if v == control]
     control_y = [data.iloc[i][1] for i in range(len(data)) if data.iloc[i][0] == control]
     treat_x = [1 for v in data.mutation if v == treat]
@@ -34,8 +35,8 @@ def test_null(data, control, treat):
     model1 = 'p[0] + p[1] * obs[x]' # model treating two conditions (exp. vs. control) differently
     args1 = (df, 'x', 'y', model1)
 
-    nullfit = minimize(nllike, guess, method="Nelder-Mead", args=(df))
-    treatfit = minimize(nllike, guess, method="Nelder-Mead", args=args1)
+    nullfit = minimize(nllike, array([1, 1]), method=METHOD, args=(df))
+    treatfit = minimize(nllike, array([1, 1, 1]), method=METHOD, args=args1)
     diff = abs(nllike(treatfit.x, df, model=model1) - nllike(nullfit.x, df))
     return 1 - chi2.cdf(x=2*diff, df=1)
 
@@ -72,8 +73,7 @@ def q2solution():
     growth_data = pandas.read_csv('MmarinumGrowth.csv')
     #creates the model we are interested in
     model = 'p[0] * obs[x] / (obs[x] + p[1])'
-    guess = numpy.array([1, 1, 1])
-    fit = minimize(nllike, guess, method="Nelder-Mead", args=(growth_data, 'S', 'u', model))
+    fit = minimize(nllike, array([1, 1, 1]), method=METHOD, args=(growth_data, 'S', 'u', model))
 
     print "The maximum growth rate is: {:.6}.".format(fit.x[0])
     print "The half maximal growth concentration is: {}.".format(int(round(fit.x[1])))
@@ -89,22 +89,19 @@ def q3solution():
     #   Assumes constant rate, linear or quadratic model.
     models = ['p[0]+p[1]*obs[x]',
               'p[0]+p[1]*obs[x]+p[2]*obs[x]**2']
-    guess = numpy.array([1, 1])
 
     args1 = (decomposition, 'Ms', 'decomp')
-    fit1 = minimize(nllike, guess, method="Nelder-Mead", args=args1)
+    fit1 = minimize(nllike, array([1, 1]), method=METHOD, args=args1)
     print fit1.x
     #This estimates the negative log likelihood using a linear model.
 
-    guess = numpy.array([1, 1, 1])
     args2 = (decomposition, 'Ms', 'decomp', models[0])
-    fit2 = minimize(nllike, guess, method="Nelder-Mead", args=args2)
+    fit2 = minimize(nllike, array([1, 1, 1]), method=METHOD, args=args2)
     print fit2.x
     #This estimates the negative log likelihood using a quadratic model.
 
-    guess = numpy.array([200, 10, -.02, 1])
     args3 = (decomposition, 'Ms', 'decomp', models[1])
-    fit3 = minimize(nllike, guess, method="Nelder-Mead", args=args3)
+    fit3 = minimize(nllike, array([200, 10, -.02, 1]), method=METHOD, args=args3)
     print fit3.x
 
     #This saves the nll functions as variables to be called during the comparison of models below.
