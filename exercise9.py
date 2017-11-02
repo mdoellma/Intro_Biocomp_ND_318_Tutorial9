@@ -103,7 +103,7 @@ def constant(p,obs):
     sigma=p[1]
     
     expected=B0
-    nll=-1*norm(expected,sigma).logpdf(obs.y).sum
+    nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
     return nll
 #set intial guesses
 constantguess=numpy.array([600,1])
@@ -133,15 +133,15 @@ def hump(p,obs):
     B2=p[2]
     sigma=p[3]
     
-    expected=B0+B1*obs.x+B2*(obs.x)^2
+    expected=B0+B1*obs.x+B2*(obs.x)*(obs.x)
     nll=-1*norm(expected,sigma).logpdf(obs.y).sum()
     return nll
 #set initial guesses
 humpguess=numpy.array([200,10,-.2,1])
 #estimate parameters
 hump_fit=minimize(hump,humpguess,method="Nelder-Mead",options={'disp':True},args=leaves)
-print(humpy_fit.x)
-print(humpy_fit.fun)#nll
+print(hump_fit.x)
+print(hump_fit.fun)#nll
 
 #calculate the difference in negative log likelihood constant vs linear
 first_D=2*(constant_fit.fun-linear_fit.fun)
@@ -157,5 +157,8 @@ second_D=2*(linear_fit.fun-hump_fit.fun)
 third_D=2*(constant_fit.fun-hump_fit.fun)
 #test for statistical significance
 1-scipy.stats.chi2.cdf(x=third_D,df=2)
+
+#plot
+ggplot(leaves,aes(x='x',y='y'))+geom_point()+theme_classic()+geom_line(aes(y=constant_fit.x[0]))+geom_line(aes(x='x',y=linear_fit.x[0]+linear_fit.x[1]*leaves.x))+geom_line(aes(x='x',y=hump_fit.x[0]+hump_fit.x[1]*leaves.x+hump_fit.x[2]*((leaves.x)*(leaves.x))))
 
 
