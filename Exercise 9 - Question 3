@@ -1,0 +1,63 @@
+import numpy
+import pandas
+data=pandas.read_csv('leafDecomp.csv',header=0,sep=',')
+from scipy.optimize import minimize
+from scipy.stats import norm
+from scipy.stats import chi2
+from plotnine import *
+def nllike1(p,obs):
+    a=p[0]
+    sig=p[1]
+    d=a
+    nll=-1*norm(d,sig).logpdf(obs.y).sum()
+    return nll
+
+def nllike2(p,obs):
+    a=p[0]
+    b=p[1]
+    sig=p[2]
+    d=a+b*obs.x
+    nll=-1*norm(d,sig).logpdf(obs.y).sum()
+    return nll
+
+def nllike3(p,obs):
+    a=p[0]
+    b=p[1]
+    c=p[2]
+    sig=p[3]
+    d=a+b*obs.x+c*obs.x*obs.x
+    nll=-1*norm(d,sig).logpdf(obs.y).sum()
+    return nll
+    
+sub1=pandas.DataFrame({'y':data.decomp,'x':data.Ms})
+
+initialGuess1=numpy.array([590,1])
+fit1=minimize(nllike1,initialGuess1,method="Nelder-Mead",options={'disp': True},args=sub1)
+initialGuess2=numpy.array([316,6.3,1])
+fit2=minimize(nllike2,initialGuess2,method="Nelder-Mead",options={'disp': True},args=sub1)
+initialGuess3=numpy.array([200,10,0.2,1])
+fit3=minimize(nllike3,initialGuess3,method="Nelder-Mead",options={'disp': True},args=sub1)
+
+D1=2*(fit1.fun-fit2.fun)
+D2=2*(fit1.fun-fit3.fun)
+D3=2*(fit2.fun-fit3.fun)
+
+1-chi2.cdf(x=D1,df=1)
+1-chi2.cdf(x=D2,df=2)
+1-chi2.cdf(x=D3,df=1)
+
+print fit1
+print fit2
+print fit3
+
+#1. import packages
+#2. load data
+#3. define three different custom likelihood functions (y=B0+error, y=B0+B1*x+error, y=B0+B1*x+B2*x^2+error)
+#4. estimate the parameters for each of the three likelihood functions
+    #a. you'll use the same data for each of these
+    #b. remember the number of parameters change for each of these so your initial guess vector/list will have to change; plotting the data can help pick initial guess values
+    #c. the initial guess for the 1st model can be guessed at by eye-balling the mean of all decomposition values
+    #d. the initial guess for the 2nd model can be guessed at by eye-balling the intercept and slope of a line drawn through the data
+    #e. the initial guesses for the 3rd model are harder; try B0=200, B1=10, B2=-0.2, sigma=1
+#5. compare the three models using pair-wise likelihood ratio tests
+    #a. remember the degrees of freedom (df) for the chi-squared distribution is equal to the difference in the number of parameters (this is 1 when comparing Model #1 to Model #2 and Model #2 to Model #2, but is 2 for comparing Model #1 to Model #3)
