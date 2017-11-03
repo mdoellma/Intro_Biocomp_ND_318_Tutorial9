@@ -202,10 +202,32 @@ print("negative log likelihood for quadratic model")
 QuadraticNll=fit.fun #this is the negative log likelihood for the quadratic model, use later for comparions to get D and p-value
 print(QuadraticNll)
 
-   
-#compare the three models using pair-wise likelihood ratio tests
-#(df) for chi-squared distribution is equal to the difference in the number of parameters (1 - model 1 to model 2; 1 - model 2 to model 3; 2 - model 1 to model 3)
-#model 1 (constant) has 2 parameters
-#model 2 (linear) has 3 parameters
-#model 3 (quadratic) has 4 parameters 
-#degrees of freedom will be 1 or 2 depending on comparsion 
+#Comparison of models:
+#Compare Constant to Linear
+#(df) = 1, constant has 2 parameters and linear has 3 parameters
+D_ConstantvLinear=2*(ConstantNll-LinearNll)
+print("D value for Constant v Linear models")
+print(D_ConstantvLinear)
+p_value_ConstantvLinear=1-scipy.stats.chi2.cdf(x=D_ConstantvLinear,df=1)
+print("p-value for Constant v Linear models")
+print(p_value_ConstantvLinear)
+
+#Compare Constant to Quadratic
+#(df) = 2, constant has 2 parameters and quadratic has 4 parameters
+D_ConstantvQuadratic=2*(ConstantNll-QuadraticNll)
+print("D value for Constant v Quadratic models")
+print(D_ConstantvQuadratic)
+p_value_ConstantvQuadratic=1-scipy.stats.chi2.cdf(x=D_ConstantvQuadratic,df=2)
+print("p-value for Constant v Quadratic models")
+print(p_value_ConstantvQuadratic)
+
+#Compare Linear to Quadratic
+#(df) = 1, linear has 3 parameters and quadratic has 4 parameters
+D_LinearvQuadratic=2*(LinearNll-QuadraticNll)
+print("D value for Linear v Quadratic models")
+print(D_LinearvQuadratic)
+p_value_LinearvQuadratic=1-scipy.stats.chi2.cdf(x=D_LinearvQuadratic,df=1)
+print("p-value for Linear v Quadratic models")
+print(p_value_LinearvQuadratic)
+
+print("Quadratic model is the best model to use. The constant model is the least accurate model to use.")
