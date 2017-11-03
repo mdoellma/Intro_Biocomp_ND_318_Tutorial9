@@ -1,0 +1,235 @@
+# import packages
+import numpy
+import pandas
+import scipy
+from scipy.stats import norm
+from scipy.optimize import minimize
+from scipy.stats import chi2
+from plotnine import *
+
+#Part 1:likelihood ratio test to determine which of the three mutations significantly reduced the expression of ponzr1
+#load data
+ponzr1 = pandas.read_csv("ponzr1.csv",header=0,sep=",")
+
+#Pull out only control and treatment you are interested in
+#var1=dataframe.loc[dataframe.col1name.isin([list of vals in column]),:]
+M124K=ponzr1.loc[ponzr1.mutation.isin(['WT','M124K']),:]
+V456D=ponzr1.loc[ponzr1.mutation.isin(['WT','V456D']),:]
+I213N=ponzr1.loc[ponzr1.mutation.isin(['WT','I213N']),:]
+
+#Make new data frame with 'group' column (your x=0 or x=1)
+#var2=pandas.DataFrame({'y':var1.col2name, 'x':})
+#Designate 'treatment' group as x=1
+#var2.loc[var1.col1name=='name of treatment group', 'x']=1
+M124KFrame=pandas.DataFrame({'y':M124K.ponzr1Counts,'x':0})
+M124KFrame.loc[M124K.mutation=='M124K','x']=1
+V456DFrame=pandas.DataFrame({'y':V456D.ponzr1Counts,'x':0})
+V456DFrame.loc[V456D.mutation=='V456D','x']=1
+I213NFrame=pandas.DataFrame({'y':I213N.ponzr1Counts,'x':0})
+I213NFrame.loc[I213N.mutation=='I213N','x']=1
+
+#Define function for null model 
+def nllike_null(p_null,obs_null):
+    B0_null=p_null[0]
+    sigma_null=p_null[1]
+    expected_null=B0_null
+    nll_null=-1*norm(expected_null,sigma_null).logpdf(obs_null.y).sum()
+    return nll_null 
+#define function for treatment model 
+def nllike_treat(p_treat,obs_treat):
+    B0_treat=p_treat[0]
+    B1_treat=p_treat[1]
+    sigma_treat=p_treat[2]
+    expected_treat=B0_treat+B1_treat*obs_treat.x
+    nll_treat=-1*norm(expected_treat,sigma_treat).logpdf(obs_treat.y).sum()
+    return nll_treat 
+    
+#Minimize nllike to estimate parameters
+#Estimate parameters for mutation M124K 
+#Null model M124K 
+initialGuess_null=numpy.array([1,1])
+fit_null_M124K=minimize(nllike_null,initialGuess_null,method="Nelder-Mead",options={'disp':True},args=M124KFrame) #for first mutation
+print("estimated parameters for null model of M124K")
+print(fit_null_M124K.x)
+print("negative log likelihood for null model of M124K")
+nll_null_M124K=fit_null_M124K.fun
+print(nll_null_M124K) #prints negative log likelihood value for null model of M124K 
+#Treatment Model 
+initialGuess_treat=numpy.array([1,1,1])
+fit_treat_M124K=minimize(nllike_treat,initialGuess_treat,method="Nelder-Mead",options={'disp':True},args=M124KFrame) #for first mutation
+print("estimated parameters for treatment model of M124K")
+print(fit_treat_M124K.x)
+print("negative log likelihood for treatment model of M124K")
+nll_treat_M124K=fit_treat_M124K.fun
+print(nll_treat_M124K) #prints negative log likelihood values
+
+#Likelihood ratio test for mutation M124K
+D_M124K=2*(nll_null_M124K-nll_treat_M124K)
+print("D value for M124K likelihood")
+print(D_M124K)
+p_value_M124K=1-scipy.stats.chi2.cdf(x=D_M124K,df=1)
+print("p-value for effect of M124K mutation")
+print(p_value_M124K)
+print("no effect of M124K mutation")
+
+#Minimize nllike to estimate parameters
+#Estimate parameters for mutation V456D 
+#Null model V456D 
+initialGuess_null=numpy.array([1,1])
+fit_null_V456D=minimize(nllike_null,initialGuess_null,method="Nelder-Mead",options={'disp':True},args=V456DFrame) #for second mutation
+print("estimated parameters for null model of V456D")
+print(fit_null_V456D.x)
+print("negative log likelihood for null model of V456D")
+nll_null_V456D=fit_null_V456D.fun
+print(nll_null_V456D) #prints negative log likelihood value for null model of V456D 
+#Treatment Model 
+initialGuess_treat=numpy.array([1,1,1])
+fit_treat_V456D=minimize(nllike_treat,initialGuess_treat,method="Nelder-Mead",options={'disp':True},args=V456DFrame) #for second mutation
+print("estimated parameters for treatment model of V456D")
+print(fit_treat_V456D.x)
+print("negative log likelihood for treatment model of V456D")
+nll_treat_V456D=fit_treat_V456D.fun
+print(nll_treat_V456D) #prints negative log likelihood values
+
+#Likelihood ratio test for mutation V456D
+D_V456D=2*(nll_null_V456D-nll_treat_V456D)
+print("D value for V456D likelihood")
+print(D_V456D)
+p_value_V456D=1-scipy.stats.chi2.cdf(x=D_V456D,df=1)
+print("p-value for effect of V456D mutation")
+print(p_value_V456D)
+print("significant effect of V456D mutation")
+
+#Minimize nllike to estimate parameters
+#Estimate parameters for mutation I213N 
+#Null model I213N
+initialGuess_null=numpy.array([1,1])
+fit_null_I213N=minimize(nllike_null,initialGuess_null,method="Nelder-Mead",options={'disp':True},args=I213NFrame)
+print("estimated parameters for null model of I213N")
+print(fit_null_I213N.x)
+print("negative log likelihood for null model of I213N")
+nll_null_I213N=fit_null_I213N.fun
+print(nll_null_I213N) #prints negative log likelihood value for null model of I213N 
+#Treatment Model 
+initialGuess_treat=numpy.array([1,1,1])
+fit_treat_I213N=minimize(nllike_treat,initialGuess_treat,method="Nelder-Mead",options={'disp':True},args=I213NFrame)
+print("estimated parameters for treatment model of I213N")
+print(fit_treat_I213N.x)
+print("negative log likelihood for treatment model of I213N")
+nll_treat_I213N=fit_treat_I213N.fun
+print(nll_treat_I213N) #prints negative log likelihood values
+
+#Likelihood ratio test for mutation I213N
+D_I213N=2*(nll_null_I213N-nll_treat_I213N)
+print("D value for I213N likelihood")
+print(D_I213N)
+p_value_I213N=1-scipy.stats.chi2.cdf(x=D_I213N,df=1)
+print("p-value for effect of I213N mutation")
+print(p_value_I213N)
+print("no effect of I213N mutation")
+
+#Part 2
+#load data
+MmarinumGrowth = pandas.read_csv("MmarinumGrowth.csv",header=0,sep=",")
+#define function
+def Monod(p,obs):
+    umax=p[0]
+    Ks=p[1]
+    sigma=p[2]
+#'expected' line needs to reflect the equation provided in the exercise - there are 2 parameters plus sigma
+    expected=umax*(obs.S/(obs.S+Ks))
+    nll=-1*norm(expected,sigma).logpdf(obs.u).sum()
+    return nll
+#estimate the parameters by minimizing the negative log likelihood
+initialGuess=numpy.array([1,1,1])
+fit=minimize(Monod,initialGuess,method="Nelder-Mead",options={'disp':True},args=MmarinumGrowth)
+print("Estimated parameters for umax, Ks, and sigma")
+print(fit.x)
+
+#Part 3
+#load data
+leafDecomp=pandas.read_csv("leafDecomp.csv",header=0,sep=",")
+#Plot data
+ggplot(leafDecomp,aes(x='Ms',y='decomp'))+geom_point()+theme_classic()
+#define three different functions (y=B0+error, y=B0+B1*x+error, y=B0+B1*x+B2*x^2+error)
+ #use the same data for all functions
+    #initial guess for the first model can be guessed at by eye-balling the mean of all decomposition values
+    #initial guess for the second model can be guessed at by eye-balling the intercept and slope of a line drawn through the data
+    #initial guess for the third model, try B0=200, B1=10, B2=-0.2, sigma=1
+def Constant(p,obs):
+    B0=p[0]
+    sigma=p[1]
+    expected=B0
+    nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+    return nll 
+#Guess for mean of decomp values = 500
+initialGuess=numpy.array([500,1])
+fit=minimize(Constant,initialGuess,method="Nelder-Mead",options={'disp':True},args=leafDecomp)
+print("parameter estimates for constant model of leafDecomp")
+print(fit.x)
+print("negative log likelihood for constant model")
+ConstantNll=fit.fun #this is the negative log likelihood for the constant model, use later for comparions to get D and p-value
+print(ConstantNll)
+    
+def Linear(p,obs):
+    B0=p[0]
+    B1=p[1]
+    sigma=p[2]
+    expected=B0+B1*obs.Ms #use obs.Ms b/c the data frame doesn't use x and y 
+    nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum() #use obs.decomp b/c dataframe doesn't use x and y 
+    return nll 
+#Guess for slope=15 intercept=150 sigma=1
+initialGuess=numpy.array([150,15,1])
+fit=minimize(Linear,initialGuess,method="Nelder-Mead",options={'disp':True},args=leafDecomp)
+print("parameter estimates for linear model of leafDecomp")
+print(fit.x)
+print("negative log likelihood for linear model")
+LinearNll=fit.fun #this is the negative log likelihood for the linear model, use later for comparions to get D and p-value
+print(LinearNll)
+
+def Quadratic(p,obs):
+    B0=p[0]
+    B1=p[1]
+    B2=p[2]
+    sigma=p[3]
+    expected=B0+B1*obs.Ms+B2*(obs.Ms*obs.Ms)
+    nll=-1*norm(expected,sigma).logpdf(obs.decomp).sum()
+    return nll 
+#Guess for quadratic B0=200, B1=10, B2=-0.2, sigma=1
+initialGuess=numpy.array([200,10,-0.2,1])
+fit=minimize(Quadratic,initialGuess,method="Nelder-Mead",options={'disp':True},args=leafDecomp)
+print("parameter estimates for quadratic model of leafDecomp")
+print(fit.x)
+print("negative log likelihood for quadratic model")
+QuadraticNll=fit.fun #this is the negative log likelihood for the quadratic model, use later for comparions to get D and p-value
+print(QuadraticNll)
+
+#Comparison of models:
+#Compare Constant to Linear
+#(df) = 1, constant has 2 parameters and linear has 3 parameters
+D_ConstantvLinear=2*(ConstantNll-LinearNll)
+print("D value for Constant v Linear models")
+print(D_ConstantvLinear)
+p_value_ConstantvLinear=1-scipy.stats.chi2.cdf(x=D_ConstantvLinear,df=1)
+print("p-value for Constant v Linear models")
+print(p_value_ConstantvLinear)
+
+#Compare Constant to Quadratic
+#(df) = 2, constant has 2 parameters and quadratic has 4 parameters
+D_ConstantvQuadratic=2*(ConstantNll-QuadraticNll)
+print("D value for Constant v Quadratic models")
+print(D_ConstantvQuadratic)
+p_value_ConstantvQuadratic=1-scipy.stats.chi2.cdf(x=D_ConstantvQuadratic,df=2)
+print("p-value for Constant v Quadratic models")
+print(p_value_ConstantvQuadratic)
+
+#Compare Linear to Quadratic
+#(df) = 1, linear has 3 parameters and quadratic has 4 parameters
+D_LinearvQuadratic=2*(LinearNll-QuadraticNll)
+print("D value for Linear v Quadratic models")
+print(D_LinearvQuadratic)
+p_value_LinearvQuadratic=1-scipy.stats.chi2.cdf(x=D_LinearvQuadratic,df=1)
+print("p-value for Linear v Quadratic models")
+print(p_value_LinearvQuadratic)
+
+print("Quadratic model is the best model to use. The constant model is the least accurate model to use.")
