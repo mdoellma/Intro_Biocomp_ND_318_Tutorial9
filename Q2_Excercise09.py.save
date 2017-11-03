@@ -1,6 +1,0 @@
-#Excercise 09
-#Authors Janice Love and Melissa Stephens
-
-Infile=open("MmarinumGrowth.csv","r")
-
-
